@@ -21,7 +21,7 @@ class Drone:
         print("log: waiting for heartbeat...") 
         try: 
             self.mavcon = mu.mavlink_connection(self.connectionstring, baud=57600)
-            heartbeat = self.mavcon.wait_heartbeat(timeout=1) # type: ignore
+            heartbeat = self.mavcon.wait_heartbeat(timeout=5) # type: ignore
         except Exception as e : 
             print("failed connection") 
             raise ConnectionError(f"failed to connect to drone at {self.connectionstring} with error code {e}")
@@ -34,7 +34,16 @@ class Drone:
     
     def getGPS(self): 
         msgGlobalPositionInt = self.mavcon.recv_match(type="GLOBAL_POSITION_INT")
-        print(msgGlobalPositionInt) 
+        return msgGlobalPositionInt
+    
+    def getAtt(self) -> dict: 
+        msg = self.mavcon.recv_match(type = 'ATTITUDE', blocking = True)
+
+        return { 
+                "roll": msg.roll, 
+                "pitch": msg.pitch,
+                "yaw": msg.yaw
+                }
 
 
 
