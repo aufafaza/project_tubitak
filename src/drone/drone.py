@@ -45,5 +45,20 @@ class Drone:
                 "yaw": msg.yaw
                 }
 
+    # notes on command long: 
+    # (target_system, target_component, command, confirmation, param1, param2, param3, param4, param5, param6, param7) 
+    def setArm(self): 
+        arm_disarm = mu.mavlink.MAV_CMD_COMPONENT_ARM_DISARM 
+        self.mavcon.mav.command_long_send(1, 0,
+                                      arm_disarm, 
+                                      0, 1, 0, 0, 0, 0, 0, 0)
+    def preArm(self) -> str: 
+        prearm_check = mu.mavlink.MAV_CMD_RUN_PREARM_CHECKS 
+        self.mavcon.mav.command_long_send(1, 0, 
+                                      prearm_check, 
+                                      0, 0, 0, 0, 0, 0, 0, 0) 
+        msg = self.mavcon.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
+        return msg.result
+
 
 
