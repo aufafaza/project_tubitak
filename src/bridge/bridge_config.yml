@@ -7,3 +7,9 @@ topics:
     ros_type_name: "sensor_msgs/msg/Image"
     gz_type_name: "gz.msgs.Image"
     direction: GZ_TO_ROS
+  - topic_name: "/world/runway/model/mini_talon_vtail/model/gimbal/link/pitch_link/sensor/camera/image"
+    ros_type_name: "sensor_msgs/msg/Image"
+    gz_type_name: "gz.msgs.Image"
+    direction: GZ_TO_ROS
+
+
