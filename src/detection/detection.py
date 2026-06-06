@@ -1,15 +1,16 @@
 import cv2
 import numpy as np
 
+
 class Detect: 
     videoCapture = None;
     rectangle = False;
     
-    def __init__(self, videoSource: cv2.VideoCapture, rectangle: bool): 
+    def __init__(self, videoSource, rectangle: bool): 
         self.videoCapture = videoSource;  
         self.rectangle = rectangle; 
 
-    def maskRed(self, bgr: cv2.typing.MatLike): 
+    def maskRed(self, bgr): 
         hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV); 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15));
         maskLowerBound1 = np.array([0, 100, 80])
@@ -26,7 +27,7 @@ class Detect:
 
         return mask
 
-    def maskBlue(self, bgr: cv2.typing.MatLike): 
+    def maskBlue(self, bgr): 
         blur = cv2.GaussianBlur(bgr, (7, 7), 0)
         hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV) 
         
@@ -42,8 +43,9 @@ class Detect:
 
         return mask 
 
-    def detect(self, mask: cv2.typing.MatLike, frame: cv2.typing.MatLike):
+    def detect(self, mask, frame):
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        centroids = []
         for index, ctr in enumerate(contours): 
             area = cv2.contourArea(ctr, oriented=False)
             if (area < 500): continue 
@@ -57,6 +59,15 @@ class Detect:
             if (edges == 4): 
                 self.rectangle = True
                 label = str(area)
+                # Compute centroid (u, v) using moments
+                M = cv2.moments(ctr)
+                if M["m00"] != 0:
+                    u = int(M["m10"] / M["m00"])
+                    v = int(M["m01"] / M["m00"])
+                    centroids.append((u, v))
+                    # Draw centroid dot
+                    cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
+ 
             else: 
                 label = "not found" 
             
@@ -64,34 +75,35 @@ class Detect:
             text_coords = tuple(approx[0][0])
             cv2.drawContours(frame, contours, index, (0, 255, 0), 2, cv2.LINE_8, hierarchy)
             cv2.putText(frame, label, text_coords, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+        return frame, centroids
             
 
-
-if __name__ == "__main__":
-    cap = cv2.VideoCapture(0, cv2.CAP_V4L2) 
-    print(cap.getBackendName)
-    if not cap.isOpened(): 
-        print("failed to open") 
-        exit() 
-    
-    detectFrame = Detect(cap, False) 
-    
-    while True: 
-        ret, frame = cap.read() 
-        print("ret value: ", ret)
-        if not ret: 
-            print("Cannot receive frame")
-            break
-        cv2.imshow("video", frame)
-        redMask = detectFrame.maskRed(frame)
-        blueMask = detectFrame.maskBlue(frame) 
-        redFrame = detectFrame.detect(redMask, frame)
-        blueFrame = detectFrame.detect(blueMask, frame)
-        cv2.imshow("video", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-    cv2.destroyAllWindows()
-     
-
+#
+# if __name__ == "__main__":
+#     cap = cv2.VideoCapture(0, cv2.CAP_V4L2) 
+#     print(cap.getBackendName)
+#     if not cap.isOpened(): 
+#         print("failed to open") 
+#         exit() 
+#
+#     detectFrame = Detect(cap, False) 
+#
+#     while True: 
+#         ret, frame = cap.read() 
+#         print("ret value: ", ret)
+#         if not ret: 
+#             print("Cannot receive frame")
+#             break
+#         cv2.imshow("video", frame)
+#         redMask = detectFrame.maskRed(frame)
+#         blueMask = detectFrame.maskBlue(frame) 
+#         redFrame = detectFrame.detect(redMask, frame)
+#         blueFrame = detectFrame.detect(blueMask, frame)
+#         cv2.imshow("video", frame)
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
+#     cv2.destroyAllWindows()
+#
+#
 
     
