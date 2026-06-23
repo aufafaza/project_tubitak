@@ -220,3 +220,4 @@ __marimo__/
 .streamlit/secrets.toml
 
 pyrightconfig.json
+./tubi_ws-main

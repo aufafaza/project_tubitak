@@ -1,0 +1,5 @@
+payload_drop_bridge:
+  ros__parameters:
+    servo_left: 9
+    servo_right: 10
+    pwm_threshold: 1700
