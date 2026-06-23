@@ -1,0 +1,5 @@
+drop_zone:
+  center_x: 40.0
+  center_y: 150.0
+  half_width: 30.0
+  half_height: 15.0

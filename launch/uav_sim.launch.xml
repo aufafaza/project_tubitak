@@ -1,0 +1,47 @@
+<launch>
+  <arg name="use_map" default="false" description="Launch MAVProxy map" />
+  <arg name="use_console" default="false" description="Launch MAVProxy console" />
+  <arg name="use_mavros_pl" default="true" description="Launch payload drop bridge" />
+  <arg name="use_drop_zones" default="false" description="Spawn randomized drop zones" />
+  <let name="map_flag" value="$(eval '\'--map\' if \'$(var use_map)\' == \'true\' else \'\'')" />
+  <let name="console_flag" value="$(eval '\'--console\' if \'$(var use_console)\' == \'true\' else \'\'')" />
+  <let name="uav_sim_share" value="$(find-pkg-share uav_sim)"/>
+  <set_env name="GZ_SIM_RESOURCE_PATH" 
+           value="$(var uav_sim_share)/model:$(var uav_sim_share)/world:$(env GZ_SIM_RESOURCE_PATH '')"/>
+  <set_env name="GZ_SIM_SYSTEM_PLUGIN_PATH" 
+           value="$(env GZ_SIM_SYSTEM_PLUGIN_PATH '')"/>
+
+  <executable 
+    cmd="gz sim -v4 -r $(var uav_sim_share)/world/vtail_runway.sdf" 
+    output="screen" 
+    name="gazebo"
+  />
+
+  <executable 
+    cmd="sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550" 
+    output="screen" 
+    name="ardupilot_sitl"
+  />
+
+  <node pkg="ros_gz_bridge" exec="parameter_bridge" name="camera_payload_bridge" output="screen"
+    args="/down_camera/image@sensor_msgs/msg/Image[gz.msgs.Image
+          /down_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo
+          /payload/drop_left@std_msgs/msg/Empty]gz.msgs.Empty
+          /payload/drop_right@std_msgs/msg/Empty]gz.msgs.Empty">
+  </node>
+
+  <group if="$(var use_mavros_pl)">
+    <node pkg="uav_sim" exec="payload_drop_bridge" name="payload_drop_bridge" output="screen">
+      <param from="$(var uav_sim_share)/config/payload_drop.yaml"/>
+    </node>
+  </group>
+
+  <group if="$(var use_drop_zones)">
+    <executable
+      cmd="bash -c 'sleep 4 &amp;&amp; ros2 launch uav_sim spawn_drop_zones.launch.py'"
+      output="screen"
+      name="spawn_drop_zones"
+    />
+  </group>
+
+</launch>

@@ -58,6 +58,12 @@ class RosCameraSubscriber(Node):
             self._image_callback,
             qos_profile_sensor_data
         )
+        self.subscription_down_camera = self.create_subscription(
+            Image,
+            '/down_camera/image',
+            self._image_callback,
+            qos_profile_sensor_data
+        )
         
         self.bridge = CvBridge()
         self.detector = Detect(None, False)
