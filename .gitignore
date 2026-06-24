@@ -221,3 +221,4 @@ __marimo__/
 
 pyrightconfig.json
 ./tubi_ws-main
+./install/*
