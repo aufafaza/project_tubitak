@@ -27,3 +27,7 @@ The port is forwarded from the master to udp:127.0.0.1:14550 for your preferred 
 ## Launch the algorithm scripts
 
 `python3 src/gz_camera.py` or `python3 src/gz_payload.py`
+
+# Notes
+
+This is still work in progress, hence some codes are noodly and needs some tuning. Especially the georeferencing algorithms.
