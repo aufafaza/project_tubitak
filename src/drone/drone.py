@@ -68,8 +68,7 @@ class Drone:
             return False 
 
     def getAtt(self) -> dict: 
-        msg = self.mavcon.recv_match(type = 'ATTITUDE', blocking = True)
-
+        msg = self.mavcon.recv_match(type = 'ATTITUDE', blocking = True, timeout=3)
         return { 
                 "roll": msg.roll, 
                 "pitch": msg.pitch,
@@ -98,12 +97,16 @@ class Drone:
                                       prearm_check, 
                                       0, 0, 0, 0, 0, 0, 0, 0) 
         msg = self.mavcon.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
+        if msg is None: 
+            print("timed out while getting gps location") 
+            return "fail"
+
         return msg.result
     
-    def armed(self) -> bool: 
-        isarmed = self.mavcon.recv_match(type='MAV_MODE', blocking=True, timeout=3)
+    # def armed(self) -> bool: 
+    #     isarmed = self.mavcon.recv_match(type='MAV_MODE', blocking=True, timeout=3)
 
-        return isarmed
+    #     return isarmed
     
     
     def setMode(self, modeName: str, timeout: float = 5.0) -> bool: 

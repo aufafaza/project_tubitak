@@ -28,7 +28,7 @@ class Detect:
         return mask
 
     def maskBlue(self, bgr): 
-        blur = cv2.GaussianBlur(bgr, (7, 7), 0)
+        # blur = cv2.GaussianBlur(bgr, (7, 7), 0)
         hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV) 
         
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
@@ -69,6 +69,7 @@ class Detect:
                     cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
  
             else: 
+                self.rectangle = False
                 label = "not found" 
             
 
