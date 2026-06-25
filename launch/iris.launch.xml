@@ -11,15 +11,15 @@
   <set_env name="GZ_SIM_SYSTEM_PLUGIN_PATH" 
            value="$(env GZ_SIM_SYSTEM_PLUGIN_PATH '')"/>
 
-  <executable 
-    cmd="gz sim -v4 -r $(var uav_sim_share)/world/vtail_runway.sdf" 
-    output="screen" 
+  <executable
+    cmd="gz sim -v4 -r $(var uav_sim_share)/world/iris_cam_runway.sdf"
+    output="screen"
     name="gazebo"
   />
 
-  <executable 
-    cmd="sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551" 
-    output="screen" 
+  <executable
+    cmd="sim_vehicle.py -v ArduCopter -f JSON --model JSON --add-param-file /home/fazabobi/ardu_ws/src/ardupilot_gazebo/config/gazebo-iris-gimbal.parm $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551 --console"
+    output="screen"
     name="ardupilot_sitl"
   />
 
@@ -27,8 +27,7 @@
     args="/down_camera/image@sensor_msgs/msg/Image[gz.msgs.Image
           /down_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo
           /payload/drop_left@std_msgs/msg/Empty]gz.msgs.Empty
-          /payload/drop_right@std_msgs/msg/Empty]gz.msgs.Empty
-          /world/runway/pose/info@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V">
+          /payload/drop_right@std_msgs/msg/Empty]gz.msgs.Empty">
   </node>
 
   <group if="$(var use_mavros_pl)">

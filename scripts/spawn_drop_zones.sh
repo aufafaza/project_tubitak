@@ -14,10 +14,9 @@ rand() {
   python3 -c "import random; print(round(random.uniform($1, $2), 2))"
 }
 
-X_RED=$(rand $X_MIN $X_MAX);   Y_RED=$(rand $Y_MIN $Y_MAX)
-X_BLUE=$(rand $X_MIN $X_MAX);  Y_BLUE=$(rand $Y_MIN $Y_MAX)
+X_RED=85.53;   Y_RED=164.33
+X_BLUE=80.0;   Y_BLUE=20.0
 
-echo "Bounds center: ($CENTER_X, $CENTER_Y) half_w=$HALF_W half_h=$HALF_H"
 echo "Spawn red drop zone at ($X_RED, $Y_RED)"
 echo "Spawn blue drop zone at ($X_BLUE, $Y_BLUE)"
 

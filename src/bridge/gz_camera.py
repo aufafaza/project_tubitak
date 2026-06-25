@@ -1,7 +1,6 @@
 import cv2
 import rclpy
 import numpy as np
-import navpy
 import sys
 import os
 import time
@@ -10,12 +9,13 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from rclpy.qos import qos_profile_sensor_data
+import pymap3d as p3d
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from detection.detection import Detect
-from perception.geof import RbodyFromNED, RGimbalFromBody, RCamFromGimbal, buildGNE, buildMatrix, georeference, georeference_ray
 from drone.drone import Drone
+from perception.geof import georeference, build_intrinsic
 
 class RosCameraSubscriber(Node):
     def __init__(self):
@@ -29,35 +29,21 @@ class RosCameraSubscriber(Node):
 
         self.latest_gps = None
         self.latest_att = None
+        self.red_detections = [] 
+        self.blue_detections = [] 
+        self.required_hits = 5 
         
         if self.drone is not None:
             self.telemetry_thread = threading.Thread(target=self._telemetry_updater, daemon=True)
             self.telemetry_thread.start()
 
-        self.A = buildMatrix(fx=381.36, fy=381.36, cx=320.0, cy=240.0)
+        self.A = build_intrinsic(fx=381.36, fy=381.36, cx=320.0, cy=240.0)
 
+        # change for flights outside gazebo 
         self.home_lat = -35.363261
         self.home_lon = 149.165230
         self.home_alt = 584.0
 
-        self.subscription_vtalon = self.create_subscription(
-            Image,
-            '/vtalon/camera/image_raw',
-            self._image_callback,
-            qos_profile_sensor_data
-        )
-        self.subscription_iris = self.create_subscription(
-            Image,
-            '/world/iris_runway/model/iris_with_gimbal/model/gimbal/link/pitch_link/sensor/camera/image',
-            self._image_callback,
-            qos_profile_sensor_data
-        )
-        self.subscription_vtalon_gimbal = self.create_subscription(
-            Image,
-            '/world/runway/model/mini_talon_vtail/model/gimbal/link/pitch_link/sensor/camera/image',
-            self._image_callback,
-            qos_profile_sensor_data
-        )
         self.subscription_down_camera = self.create_subscription(
             Image,
             '/down_camera/image',
@@ -65,9 +51,9 @@ class RosCameraSubscriber(Node):
             qos_profile_sensor_data
         )
         
+        
         self.bridge = CvBridge()
         self.detector = Detect(None, False)
-        self.get_logger().info('Camera node successfully initialized.')
 
     def _telemetry_updater(self):
         while rclpy.ok():
@@ -96,7 +82,8 @@ class RosCameraSubscriber(Node):
                             "yaw": msg.yaw
                         }
             except Exception as e:
-                pass
+                self.get_logger().error(f"failed to update telemetry: {e}")
+
             time.sleep(0.05)
 
     def _image_callback(self, msg):
@@ -116,34 +103,42 @@ class RosCameraSubscriber(Node):
                 gps = self.latest_gps
                 att = self.latest_att
 
-                try:
-                    n_drone, e_drone, d_drone = navpy.lla2ned(
-                        gps['lat'], gps['lon'], gps['alt_msl'],
-                        self.home_lat, self.home_lon, self.home_alt
-                    )
-                    r_nc_in_NED = np.array([n_drone, e_drone, d_drone])
-
-                    R_n_b = RbodyFromNED(att['roll'], att['pitch'], att['yaw'])
-                    
-                    R_b_m = RGimbalFromBody(psi=0.0, theta=-np.pi/2)
-                    R_m_c = RCamFromGimbal()
-                    
-                    G_NE = buildGNE(R_n_b, R_b_m, R_m_c, r_nc_in_NED)
-
-                    for (u, v) in red_centroids:
-                        target_N, target_E = georeference(u, v, self.A, G_NE)
-                        self.get_logger().info(
-                            f"Target Detected at Pixel: ({u}, {v}) -> Local NED (North: {target_N:.2f}m, East: {target_E:.2f}m)"
+                LEVEL_THRESHOLD = np.radians(15)
+                if abs(att["roll"]) < LEVEL_THRESHOLD and abs(att["pitch"]) < LEVEL_THRESHOLD:
+                    try:
+                        n, e, d = p3d.geodetic2ned(
+                            gps['lat'], gps['lon'], gps['alt_msl'],
+                            self.home_lat, self.home_lon, self.home_alt
                         )
+                        r_drone_ned = np.array([n, e, d])
 
-                    for (u, v) in blue_centroids:
-                        target_N, target_E = georeference(u, v, self.A, G_NE)
-                        self.get_logger().info(
-                            f"BLUE Target Detected at Pixel: ({u}, {v}) -> Local NED (North: {target_N:.2f}m, East: {target_E:.2f}m)"
-                        )
-                except Exception as math_err:
-                    self.get_logger().error(f"Georeferencing math error: {math_err}")
-            
+                        for (u, v) in red_centroids:
+                            result = georeference(u, v, self.A, att["roll"], att["pitch"], att["yaw"], r_drone_ned)
+                            if result is not None:
+                                self.red_detections.append(result)
+                                if len(self.red_detections) >= self.required_hits:
+                                    avg_N = sum(r[0] for r in self.red_detections) / self.required_hits
+                                    avg_E = sum(r[1] for r in self.red_detections) / self.required_hits
+                                    self.get_logger().info(
+                                        f"RED target confirmed -> NED (N: {avg_N:.2f}m, E: {avg_E:.2f}m)"
+                                    )
+                                    self.red_detections = []
+
+                        for (u, v) in blue_centroids:
+                            result = georeference(u, v, self.A, att["roll"], att["pitch"], att["yaw"], r_drone_ned)
+                            if result is not None:
+                                self.blue_detections.append(result)
+                                if len(self.blue_detections) >= self.required_hits:
+                                    avg_N = sum(r[0] for r in self.blue_detections) / self.required_hits
+                                    avg_E = sum(r[1] for r in self.blue_detections) / self.required_hits
+                                    self.get_logger().info(
+                                        f"BLUE target confirmed -> NED (N: {avg_N:.2f}m, E: {avg_E:.2f}m)"
+                                    )
+                                    self.blue_detections = []
+
+                    except Exception as math_err:
+                        self.get_logger().error(f"Georeferencing math error: {math_err}")
+                
             cv2.imshow("Red Target Detection", red_processed)
             cv2.imshow("Blue Target Detection", blue_processed)
             if cv2.waitKey(1) & 0xFF == ord('q'):

@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/.tubivenv/bin/python3",
+    "python.analysis.extraPaths": [
+        "/opt/ros/jazzy/lib/python3.12/site-packages",
+        "/home/fazabobi/ardu_ws/install/lib/python3.12/site-packages"
+    ]
+}
