@@ -48,6 +48,7 @@ class RosCameraSubscriber(Node):
             qos_profile_sensor_data
         )
         
+        
         self.bridge = CvBridge()
         self.detector = Detect(None, False)
 
@@ -88,6 +89,8 @@ class RosCameraSubscriber(Node):
             
             red_frame = frame_bgr.copy()
             blue_frame = frame_bgr.copy()
+            cv2.imshow("Blue Target Detection", blue_frame)
+
 
             redMask = self.detector.maskRed(frame_bgr)
             red_processed, red_centroids = self.detector.detect(redMask, red_frame)
@@ -121,11 +124,11 @@ class RosCameraSubscriber(Node):
                             self.get_logger().info(
                                 f"Target Detected at Pixel: ({u}, {v}) -> Local NED (North: {target_N:.2f}m, East: {target_E:.2f}m)"
                             )
-                            
+
                 except Exception as math_err:
                     self.get_logger().error(f"Georeferencing math error: {math_err}")
             
-            cv2.imshow("Red Target Detection", red_processed)
+            # cv2.imshow("Red Target Detection", red_processed)
             cv2.imshow("Blue Target Detection", blue_processed)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
