@@ -1,7 +1,7 @@
 <launch>
   <arg name="use_map" default="false" description="Launch MAVProxy map" />
   <arg name="use_console" default="false" description="Launch MAVProxy console" />
-  <arg name="use_mavros_pl" default="true" description="Launch payload drop bridge" />
+  <arg name="use_mavros_pl" default="false" description="Launch payload drop bridge" />
   <arg name="use_drop_zones" default="false" description="Spawn randomized drop zones" />
   <let name="map_flag" value="$(eval '\'--map\' if \'$(var use_map)\' == \'true\' else \'\'')" />
   <let name="console_flag" value="$(eval '\'--console\' if \'$(var use_console)\' == \'true\' else \'\'')" />
@@ -18,7 +18,7 @@
   />
 
   <executable 
-    cmd="sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550" 
+    cmd="sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551" 
     output="screen" 
     name="ardupilot_sitl"
   />
@@ -27,7 +27,8 @@
     args="/down_camera/image@sensor_msgs/msg/Image[gz.msgs.Image
           /down_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo
           /payload/drop_left@std_msgs/msg/Empty]gz.msgs.Empty
-          /payload/drop_right@std_msgs/msg/Empty]gz.msgs.Empty">
+          /payload/drop_right@std_msgs/msg/Empty]gz.msgs.Empty
+          /world/runway/pose/info@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V">
   </node>
 
   <group if="$(var use_mavros_pl)">

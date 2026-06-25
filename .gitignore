@@ -220,5 +220,15 @@ __marimo__/
 .streamlit/secrets.toml
 
 pyrightconfig.json
+# mavlink files.
 ./tubi_ws-main
-./install/*
+install
+*.bin
+*.parm
+*.raw
+*.log
+*.BIN
+*.DAT
+log/
+logs/
+*.tlog

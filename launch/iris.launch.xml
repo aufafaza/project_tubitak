@@ -1,7 +1,7 @@
 <launch>
   <arg name="use_map" default="false" description="Launch MAVProxy map" />
   <arg name="use_console" default="false" description="Launch MAVProxy console" />
-  <arg name="use_mavros_pl" default="true" description="Launch payload drop bridge" />
+  <arg name="use_mavros_pl" default="false" description="Launch payload drop bridge" />
   <arg name="use_drop_zones" default="false" description="Spawn randomized drop zones" />
   <let name="map_flag" value="$(eval '\'--map\' if \'$(var use_map)\' == \'true\' else \'\'')" />
   <let name="console_flag" value="$(eval '\'--console\' if \'$(var use_console)\' == \'true\' else \'\'')" />
