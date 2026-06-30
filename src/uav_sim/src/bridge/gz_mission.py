@@ -13,14 +13,18 @@ from sensor_msgs.msg import Image
 from rclpy.utilities import ok
 import cv2
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.append(os.path.join(_src, 'uav_mission', 'src'))
+sys.path.append(os.path.join(_src, 'uav_mission'))
+sys.path.append(os.path.join(_src, 'uav_vision', 'src'))
+sys.path.append(os.path.join(_src, 'uav_perception', 'src'))
 
 # defined modules
-from drone.drone import Drone
+from drone import Drone
 import perception.geof as georeference
-import payload.dropper as dropper
-import mission.waypoint as wp
-from detection.detection import Detect
+import dropper
+import waypoint as wp
+from vision.detection import Detect
 
 
 #static variables

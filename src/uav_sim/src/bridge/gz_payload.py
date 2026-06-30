@@ -10,10 +10,11 @@ import pymap3d as p3d
 from rclpy.utilities import ok
 
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.append(os.path.join(_src, 'uav_mission', 'src'))
 
-from drone.drone import Drone
-import payload.dropper
+from drone import Drone
+import dropper
 
 class RosDropTest(Node):
     def __init__(self):
@@ -91,7 +92,7 @@ class RosDropTest(Node):
         vx = self.latest_vel['vx']
         vy = self.latest_vel['vy']
 
-        drop_point = payload.dropper.Dropper().compute_drop_point(
+        drop_point = dropper.Dropper().compute_drop_point(
             self.target_ned, drone_ned, vx, vy
         )
         if drop_point is None:

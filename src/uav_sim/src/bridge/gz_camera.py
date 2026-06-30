@@ -12,10 +12,13 @@ from rclpy.utilities import ok
 from rclpy.qos import qos_profile_sensor_data
 import pymap3d as p3d
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.append(os.path.join(_src, 'uav_mission', 'src'))
+sys.path.append(os.path.join(_src, 'uav_vision', 'src'))
+sys.path.append(os.path.join(_src, 'uav_perception', 'src'))
 
-from detection.detection import Detect
-from drone.drone import Drone
+from vision.detection import Detect
+from drone import Drone
 from perception.geof import georeference, build_intrinsic
 
 class RosCameraSubscriber(Node):
