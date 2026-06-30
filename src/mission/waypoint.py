@@ -2,7 +2,7 @@ import numpy as np
 import pymap3d as p3d
 from pymavlink import mavutil
 
-APPROACH_DIST = 150.0  # metres before target for approach waypoint
+APPROACH_DIST = 150.0 
 
 class WaypointPlanner:
     def __init__(self, mavcon, home_lat, home_lon, home_alt):

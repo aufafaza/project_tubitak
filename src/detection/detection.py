@@ -43,68 +43,91 @@ class Detect:
 
         return mask 
 
-    def detect(self, mask, frame):
+    @staticmethod
+    def _corner_angles(pts):
+        angles = []
+        n = len(pts)
+        for i in range(n):
+            p1 = pts[(i - 1) % n].astype(float)
+            p2 = pts[i].astype(float)
+            p3 = pts[(i + 1) % n].astype(float)
+            v1 = p1 - p2
+            v2 = p3 - p2
+            cos_a = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2) + 1e-6)
+            angles.append(np.degrees(np.arccos(np.clip(cos_a, -1.0, 1.0))))
+        return angles
+
+    def detect(self, mask, frame,
+               min_area=1000,
+               epsilon_ratio=0.08,
+               aspect_tolerance=0.35,
+               angle_tolerance=25):
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         centroids = []
-        for index, ctr in enumerate(contours): 
+        for index, ctr in enumerate(contours):
             area = cv2.contourArea(ctr, oriented=False)
-            if (area < 500): continue 
+            if area < min_area:
+                continue
+
             perimeter = cv2.arcLength(ctr, True)
-            epsilon = 0.03 * perimeter 
+            approx = cv2.approxPolyDP(ctr, epsilon_ratio * perimeter, True)
 
-            approx = cv2.approxPolyDP(ctr, epsilon, True)
-            
-            edges = len(approx) 
+            if len(approx) != 4:
+                continue
+            if not cv2.isContourConvex(approx):
+                continue
 
-            if (edges == 4): 
-                self.rectangle = True
-                label = str(area)
-                # Compute centroid (u, v) using moments
-                M = cv2.moments(ctr)
-                if M["m00"] != 0:
-                    u = int(M["m10"] / M["m00"])
-                    v = int(M["m01"] / M["m00"])
-                    centroids.append((u, v))
-                    # Draw centroid dot
-                    cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
- 
-            else: 
-                self.rectangle = False
-                label = "not found" 
-            
+            # aspect ratio — square should be close to 1.0
+            x, y, w, h = cv2.boundingRect(approx)
+            aspect = float(w) / (h + 1e-6)
+            if not (1.0 - aspect_tolerance < aspect < 1.0 + aspect_tolerance):
+                continue
 
-            text_coords = tuple(approx[0][0])
-            cv2.drawContours(frame, contours, index, (0, 255, 0), 2, cv2.LINE_8, hierarchy)
-            cv2.putText(frame, label, text_coords, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            # all corners should be ~90°
+            pts = approx.reshape(-1, 2)
+            angles = self._corner_angles(pts)
+            if not all(90.0 - angle_tolerance < a < 90.0 + angle_tolerance for a in angles):
+                continue
+
+            self.rectangle = True
+            M = cv2.moments(ctr)
+            if M["m00"] != 0:
+                u = int(M["m10"] / M["m00"])
+                v = int(M["m01"] / M["m00"])
+                centroids.append((u, v))
+                cv2.circle(frame, (u, v), 5, (0, 0, 255), -1)
+                cv2.drawContours(frame, contours, index, (0, 255, 0), 2, cv2.LINE_8, hierarchy)
+                cv2.putText(frame, f"{int(area)}", tuple(approx[0][0]),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
         return frame, centroids
             
 
-#
-# if __name__ == "__main__":
-#     cap = cv2.VideoCapture(0, cv2.CAP_V4L2) 
-#     print(cap.getBackendName)
-#     if not cap.isOpened(): 
-#         print("failed to open") 
-#         exit() 
-#
-#     detectFrame = Detect(cap, False) 
-#
-#     while True: 
-#         ret, frame = cap.read() 
-#         print("ret value: ", ret)
-#         if not ret: 
-#             print("Cannot receive frame")
-#             break
-#         cv2.imshow("video", frame)
-#         redMask = detectFrame.maskRed(frame)
-#         blueMask = detectFrame.maskBlue(frame) 
-#         redFrame = detectFrame.detect(redMask, frame)
-#         blueFrame = detectFrame.detect(blueMask, frame)
-#         cv2.imshow("video", frame)
-#         if cv2.waitKey(1) & 0xFF == ord('q'):
-#             break
-#     cv2.destroyAllWindows()
-#
-#
+
+if __name__ == "__main__":
+    cap = cv2.VideoCapture('video_2.mp4', cv2.CAP_FFMPEG)
+    if not cap.isOpened(): 
+        print("failed to open") 
+        exit() 
+
+    detectFrame = Detect(cap, False) 
+
+    while True: 
+        ret, frame = cap.read() 
+        print("ret value: ", ret)
+        if not ret: 
+            print("Cannot receive frame")
+            break
+        cv2.imshow("video", frame)
+        # redMask = detectFrame.maskRed(frame)
+        blueMask = detectFrame.maskBlue(frame) 
+        # redFrame = detectFrame.detect(redMask, frame)
+        blueFrame = detectFrame.detect(blueMask, frame)
+        cv2.imshow("video", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cv2.destroyAllWindows()
+
+
 
     
