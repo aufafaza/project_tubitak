@@ -7,6 +7,8 @@ import threading
 from rclpy.node import Node
 from std_msgs.msg import Empty
 import pymap3d as p3d
+from rclpy.utilities import ok
+
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -41,7 +43,7 @@ class RosDropTest(Node):
         self.timer = self.create_timer(0.1, self._drop_check)
 
     def _telemetry_updater(self):
-        while rclpy.ok():
+        while ok():
             if self.drone is None or self.drone.mavcon is None:
                 time.sleep(1.0)
                 continue

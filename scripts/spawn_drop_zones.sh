@@ -14,8 +14,10 @@ rand() {
   python3 -c "import random; print(round(random.uniform($1, $2), 2))"
 }
 
-X_RED=85.53;   Y_RED=164.33
-X_BLUE=80.0;   Y_BLUE=20.0
+# for testing.....
+
+X_RED=-6.71;   Y_RED=62.98
+X_BLUE=-14.02;   Y_BLUE=120.38
 
 echo "Spawn red drop zone at ($X_RED, $Y_RED)"
 echo "Spawn blue drop zone at ($X_BLUE, $Y_BLUE)"

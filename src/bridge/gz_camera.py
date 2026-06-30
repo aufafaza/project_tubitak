@@ -8,6 +8,7 @@ import threading
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from rclpy.utilities import ok
 from rclpy.qos import qos_profile_sensor_data
 import pymap3d as p3d
 
@@ -56,7 +57,7 @@ class RosCameraSubscriber(Node):
         self.detector = Detect(None, False)
 
     def _telemetry_updater(self):
-        while rclpy.ok():
+        while ok():
             if self.drone is None or self.drone.mavcon is None:
                 time.sleep(1.0)
                 continue
