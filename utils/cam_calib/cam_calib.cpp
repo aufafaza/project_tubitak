@@ -62,5 +62,21 @@ int main () {
 	std::cout << "distCoeffs : " << distCoeffs << std::endl;
 	std::cout << "Rotation vector : " << R << std::endl;
 	std::cout << "Translation vector : " << T << std::endl;
-	cv::Mat Image; 
+	cv::Mat image; 
+	image = cv::imread(images[0]);
+	cv::Mat dst, map1, map2, new_camera_matrix; 
+	cv::Size imageSize(cv::Size(image.cols, image.rows)); 
+
+	new_camera_matrix = cv::getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0);
+
+	cv::undistort(frame, dst, new_camera_matrix, distCoeffs, new_camera_matrix);
+
+	cv::initUndistortRectifyMap(cameraMatrix, distCoeffs, cv::Mat(), cv::getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize, CV_16SC2, map1, map2);
+
+	cv::remap(frame, dst, map1, map2, cv::INTER_LINEAR); 
+
+	cv::imshow("undistorted image", dst); 
+	cv::waitKey(0); 
+
+	return 0;
 } 
