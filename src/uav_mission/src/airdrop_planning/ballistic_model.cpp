@@ -40,13 +40,13 @@ Point2D computeReleasePoint(
     // So that the final s(0) and s(1) is the distance the payload drifted
     // s is payload state
     StateVector s(
-        0, 0, uav_vz,
+        0, 0, uav_z,
         uav_vx, uav_vy, uav_vz
     );
 
     while (s(2) > 0) {
         // Update wind estimate based on equation 5 and Touma (reference Z2 and W2 to uav state)
-        double height_ratio_pow = pow(s(2) / uav_z, 1.0/7.0);
+        double height_ratio_pow = pow(abs(s(2) / uav_z), 1.0/7.0);
 
         double new_wx = wx * height_ratio_pow;
         double new_wy = wy * height_ratio_pow;
