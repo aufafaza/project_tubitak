@@ -1,0 +1,5 @@
+numpy>=1.26.4
+opencv-python>=4.13.0
+pymavlink>=2.4.49
+pymap3d>=3.2.0
+scipy>=1.10.0
