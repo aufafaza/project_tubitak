@@ -46,7 +46,7 @@ class RosTest(Node):
 
         # camera stuff
         self.red_detections = []
-        self.blue_detections = []
+        # self.blue_detections = []
         self.required_hits = 5
         self.bridge = CvBridge()
         
@@ -175,14 +175,14 @@ class RosTest(Node):
         try:
             frame_bgr = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             red_frame = frame_bgr.copy()
-            blue_frame = frame_bgr.copy()
+            # blue_frame = frame_bgr.copy()
 
             red_cv_frame, red_centroids = self.detector.detect(
                 self.detector.maskRed(frame_bgr), red_frame
             )
-            blue_cv_frame, blue_centroids = self.detector.detect(
-                self.detector.maskBlue(frame_bgr), blue_frame
-            )
+            # blue_cv_frame, blue_centroids = self.detector.detect(
+            #     self.detector.maskBlue(frame_bgr), blue_frame
+            # )
             if self.gps is not None and self.att is not None:
                 if abs(self.att["roll"]) < np.radians(15) and abs(self.att["pitch"]) < np.radians(15):
                     try:
@@ -191,11 +191,11 @@ class RosTest(Node):
                         )
                         r_drone = np.array([n, e, d])
                         self._accumulate('red', red_centroids, r_drone)
-                        self._accumulate('blue', blue_centroids, r_drone)
+                        # self._accumulate('blue', blue_centroids, r_drone)
                     except Exception as e:
                         self.get_logger().error(f"georeferencing error {e}")
             cv2.imshow("red frame", red_cv_frame)
-            cv2.imshow("blue frame", blue_cv_frame)
+            # cv2.imshow("blue frame", blue_cv_frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 raise KeyboardInterrupt
 
@@ -206,7 +206,9 @@ class RosTest(Node):
     def _accumulate(self, color: str, centroids, r_drone):
         if color in self.confirmed_targets:
             return
-        store = self.red_detections if color == 'red' else self.blue_detections
+        store = []
+        if color == 'red': 
+            store = self.red_detections 
 
         for (u, v) in centroids:
             if self.gps is not None and self.att is not None:
@@ -220,7 +222,7 @@ class RosTest(Node):
                 if result is not None:
                     store.append(result)
 
-        if len(store) >= self.required_hits:
+        if store is not None and len(store) >= self.required_hits:
             avg_n = sum(r[0] for r in store) / self.required_hits
             avg_e = sum(r[1] for r in store) / self.required_hits
             self.confirmed_targets[color] = np.array([avg_n, avg_e])
@@ -240,10 +242,10 @@ class RosTest(Node):
         red_wps = self.wp_planner.build_waypoints(
             target_ned=self.confirmed_targets['red'], cruise_alt=self.gps['alt_rel'], yaw=self.att['yaw']
         )
-        blue_wps = self.wp_planner.build_waypoints(
-            self.confirmed_targets['blue'], self.gps['alt_rel'], self.att['yaw']
-        )
-        waypoints = red_wps + blue_wps
+        # blue_wps = self.wp_planner.build_waypoints(
+            # self.confirmed_targets['blue'], self.gps['alt_rel'], self.att['yaw']
+        # )
+        waypoints = red_wps 
 
         def _upload():
             self._uploading = True

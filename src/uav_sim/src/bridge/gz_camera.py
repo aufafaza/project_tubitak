@@ -27,9 +27,9 @@ class RosCameraSubscriber(Node):
 
         self.latest_gps = None
         self.latest_att = None
-        self.red_detections = [] 
-        self.blue_detections = [] 
-        self.required_hits = 5 
+        self.red_detections = []
+        # self.blue_detections = []
+        self.required_hits = 5
         
         if self.drone is not None:
             self.telemetry_thread = threading.Thread(target=self._telemetry_updater, daemon=True)
@@ -89,15 +89,15 @@ class RosCameraSubscriber(Node):
             frame_bgr = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             
             red_frame = frame_bgr.copy()
-            blue_frame = frame_bgr.copy()
+            # blue_frame = frame_bgr.copy()
 
             redMask = self.detector.maskRed(frame_bgr)
             red_processed, red_centroids = self.detector.detect(redMask, red_frame)
 
-            blueMask = self.detector.maskBlue(frame_bgr)
-            blue_processed, blue_centroids = self.detector.detect(blueMask, blue_frame)
-            
-            if (len(red_centroids) > 0 or len(blue_centroids) > 0) and self.latest_gps is not None and self.latest_att is not None:
+            # blueMask = self.detector.maskBlue(frame_bgr)
+            # blue_processed, blue_centroids = self.detector.detect(blueMask, blue_frame)
+
+            if len(red_centroids) > 0 and self.latest_gps is not None and self.latest_att is not None:
                 gps = self.latest_gps
                 att = self.latest_att
 
@@ -122,23 +122,23 @@ class RosCameraSubscriber(Node):
                                     )
                                     self.red_detections = []
 
-                        for (u, v) in blue_centroids:
-                            result = georeference(u, v, self.A, att["roll"], att["pitch"], att["yaw"], r_drone_ned)
-                            if result is not None:
-                                self.blue_detections.append(result)
-                                if len(self.blue_detections) >= self.required_hits:
-                                    avg_N = sum(r[0] for r in self.blue_detections) / self.required_hits
-                                    avg_E = sum(r[1] for r in self.blue_detections) / self.required_hits
-                                    self.get_logger().info(
-                                        f"BLUE target confirmed -> NED (N: {avg_N:.2f}m, E: {avg_E:.2f}m)"
-                                    )
-                                    self.blue_detections = []
+                        # for (u, v) in blue_centroids:
+                        #     result = georeference(u, v, self.A, att["roll"], att["pitch"], att["yaw"], r_drone_ned)
+                        #     if result is not None:
+                        #         self.blue_detections.append(result)
+                        #         if len(self.blue_detections) >= self.required_hits:
+                        #             avg_N = sum(r[0] for r in self.blue_detections) / self.required_hits
+                        #             avg_E = sum(r[1] for r in self.blue_detections) / self.required_hits
+                        #             self.get_logger().info(
+                        #                 f"BLUE target confirmed -> NED (N: {avg_N:.2f}m, E: {avg_E:.2f}m)"
+                        #             )
+                        #             self.blue_detections = []
 
                     except Exception as math_err:
                         self.get_logger().error(f"Georeferencing math error: {math_err}")
                 
             cv2.imshow("Red Target Detection", red_processed)
-            cv2.imshow("Blue Target Detection", blue_processed)
+            # cv2.imshow("Blue Target Detection", blue_processed)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 raise KeyboardInterrupt
                 
