@@ -1,0 +1,23 @@
+<launch>
+  <arg name="use_map" default="false" description="Launch MAVProxy map" />
+  <arg name="use_console" default="false" description="Launch MAVProxy console" />
+  <arg name="use_drop_zones" default="true" description="Spawn drop zones" />
+  <arg name="use_camera" default="false" description="Launch OpenCV detection node alongside mission node" />
+
+  <let name="uav_sim_share" value="$(find-pkg-share uav_sim)"/>
+
+  <include file="$(var uav_sim_share)/launch/uav_sim.launch.xml">
+    <arg name="use_map" value="$(var use_map)" />
+    <arg name="use_console" value="$(var use_console)" />
+    <arg name="use_mavros_pl" value="false" />
+    <arg name="use_drop_zones" value="$(var use_drop_zones)" />
+    <arg name="use_camera" value="$(var use_camera)" />
+  </include>
+
+  <executable
+    cmd="bash -c 'sleep 10 &amp;&amp; ros2 run uav_sim gz_mission.py'"
+    output="screen"
+    name="mission_node"
+  />
+
+</launch>

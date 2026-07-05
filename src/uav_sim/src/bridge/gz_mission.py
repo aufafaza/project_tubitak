@@ -1,29 +1,21 @@
+#!/usr/bin/env python3
 import rclpy
 import numpy as np
 import time
 import threading
-import os
 from rclpy.node import Node
 from std_msgs.msg import Empty
 import pymap3d as p3d
-import sys
 from rclpy.qos import qos_profile_sensor_data
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 from rclpy.utilities import ok
 import cv2
 
-_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-sys.path.append(os.path.join(_src, 'uav_mission', 'src'))
-sys.path.append(os.path.join(_src, 'uav_mission'))
-sys.path.append(os.path.join(_src, 'uav_vision', 'src'))
-sys.path.append(os.path.join(_src, 'uav_perception', 'src'))
-
-# defined modules
-from drone import Drone
+from uav_mission.drone import Drone
+from uav_mission import dropper
+from uav_mission import waypoint as wp
 import perception.geof as georeference
-import dropper
-import waypoint as wp
 from vision.detection import Detect
 
 
@@ -204,10 +196,8 @@ class RosTest(Node):
                         self.get_logger().error(f"georeferencing error {e}")
             cv2.imshow("red frame", red_cv_frame)
             cv2.imshow("blue frame", blue_cv_frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'): 
-                cv2.destroyAllWindows() 
-                rclpy.shutdown() 
-                exit(0)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                raise KeyboardInterrupt
 
         except Exception as e:
             self.get_logger().error(f"error in getting frame: {e}")

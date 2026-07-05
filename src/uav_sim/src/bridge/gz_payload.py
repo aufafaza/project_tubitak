@@ -1,7 +1,6 @@
+#!/usr/bin/env python3
 import rclpy
 import numpy as np
-import sys
-import os
 import time
 import threading
 from rclpy.node import Node
@@ -9,12 +8,8 @@ from std_msgs.msg import Empty
 import pymap3d as p3d
 from rclpy.utilities import ok
 
-
-_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-sys.path.append(os.path.join(_src, 'uav_mission', 'src'))
-
-from drone import Drone
-import dropper
+from uav_mission.drone import Drone
+from uav_mission import dropper
 
 class RosDropTest(Node):
     def __init__(self):

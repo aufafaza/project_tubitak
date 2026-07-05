@@ -3,23 +3,24 @@
   <arg name="use_console" default="false" description="Launch MAVProxy console" />
   <arg name="use_mavros_pl" default="false" description="Launch payload drop bridge" />
   <arg name="use_drop_zones" default="false" description="Spawn randomized drop zones" />
+  <arg name="use_camera" default="false" description="Launch OpenCV detection node" />
   <let name="map_flag" value="$(eval '\'--map\' if \'$(var use_map)\' == \'true\' else \'\'')" />
   <let name="console_flag" value="$(eval '\'--console\' if \'$(var use_console)\' == \'true\' else \'\'')" />
   <let name="uav_sim_share" value="$(find-pkg-share uav_sim)"/>
-  <set_env name="GZ_SIM_RESOURCE_PATH" 
+  <set_env name="GZ_SIM_RESOURCE_PATH"
            value="$(var uav_sim_share)/model:$(var uav_sim_share)/world:$(env GZ_SIM_RESOURCE_PATH '')"/>
-  <set_env name="GZ_SIM_SYSTEM_PLUGIN_PATH" 
+  <set_env name="GZ_SIM_SYSTEM_PLUGIN_PATH"
            value="$(env GZ_SIM_SYSTEM_PLUGIN_PATH '')"/>
 
-  <executable 
-    cmd="gz sim -v4 -r $(var uav_sim_share)/world/vtail_runway.sdf" 
-    output="screen" 
+  <executable
+    cmd="gz sim -v4 -r $(var uav_sim_share)/world/vtail_runway.sdf"
+    output="screen"
     name="gazebo"
   />
 
-  <executable 
-    cmd="sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551" 
-    output="screen" 
+  <executable
+    cmd="kitty -- sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551"
+    output="screen"
     name="ardupilot_sitl"
   />
 
@@ -42,6 +43,14 @@
       cmd="bash -c 'sleep 4 &amp;&amp; ros2 launch uav_sim spawn_drop_zones.launch.py'"
       output="screen"
       name="spawn_drop_zones"
+    />
+  </group>
+
+  <group if="$(var use_camera)">
+    <executable
+      cmd="kitty -- ros2 run uav_sim gz_camera.py"
+      output="screen"
+      name="camera_detection"
     />
   </group>
 

@@ -12,21 +12,29 @@ A simple mission planner for TEKNOFEST 2026 fixed-wing category.
 
 Make sure to install all dependencies in **requirements.txt**, use your own preferred ROS2 and Gazebo versions, should be compatible with any.
 
-## Launch the ros2 node and simulation
+## Run the full mission (single command)
 
-`ros2 launch uav_sim uav_sim.launch.xml`
-If needed, use these flags:
+```bash
+colcon build --symlink-install
+source install/setup.bash
+ros2 launch uav_sim mission.launch.xml
+```
 
-- `use_mavros_pl:=true`
-- `use_drop_zones:=true`
+Optional flags:
+
+- `use_map:=true` — open MAVProxy map
+- `use_console:=true` — open MAVProxy console
+- `use_drop_zones:=false` — skip spawning drop zones
+
+## Launch simulation only (no mission node)
+
+```bash
+ros2 launch uav_sim uav_sim.launch.xml
+```
 
 ## Launch your preferred planner, either MAVProxy or Mission Planner
 
-The port is forwarded from the master to udp:127.0.0.1:14550 for your preferred planner and udp:127.0.0.1:14451 for scripts.
-
-## Launch the algorithm scripts
-
-`python3 src/gz_camera.py` or `python3 src/gz_payload.py`
+The port is forwarded from the master to udp:127.0.0.1:14550 for your preferred planner and udp:127.0.0.1:14551 for scripts.
 
 # Notes
 

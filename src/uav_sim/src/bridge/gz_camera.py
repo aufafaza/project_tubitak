@@ -1,8 +1,7 @@
+#!/usr/bin/env python3
 import cv2
 import rclpy
 import numpy as np
-import sys
-import os
 import time
 import threading
 from rclpy.node import Node
@@ -12,13 +11,8 @@ from rclpy.utilities import ok
 from rclpy.qos import qos_profile_sensor_data
 import pymap3d as p3d
 
-_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-sys.path.append(os.path.join(_src, 'uav_mission', 'src'))
-sys.path.append(os.path.join(_src, 'uav_vision', 'src'))
-sys.path.append(os.path.join(_src, 'uav_perception', 'src'))
-
 from vision.detection import Detect
-from drone import Drone
+from uav_mission.drone import Drone
 from perception.geof import georeference, build_intrinsic
 
 class RosCameraSubscriber(Node):
@@ -146,9 +140,7 @@ class RosCameraSubscriber(Node):
             cv2.imshow("Red Target Detection", red_processed)
             cv2.imshow("Blue Target Detection", blue_processed)
             if cv2.waitKey(1) & 0xFF == ord('q'):
-                cv2.destroyAllWindows()
-                rclpy.shutdown()
-                exit(0)
+                raise KeyboardInterrupt
                 
         except Exception as e:
             self.get_logger().error(f"Failed to process image frame: {e}")
