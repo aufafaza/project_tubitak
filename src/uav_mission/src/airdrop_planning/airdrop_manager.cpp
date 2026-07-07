@@ -109,7 +109,7 @@ void AirdropManager::update(
         }
 
         case DropState::RELEASING: {
-            // TODO: MAVLink command - Trigger payload servo
+            
             
             current_state = DropState::COMPLETED;
             break;
