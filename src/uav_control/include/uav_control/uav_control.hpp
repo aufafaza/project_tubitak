@@ -48,8 +48,9 @@ private:
     std::shared_ptr<mavsdk::System> _system;    
     std::unique_ptr<mavsdk::Telemetry> _telemetry; 
     std::unique_ptr<mavsdk::Action> _action; 
-    std::unique_ptr<mavsdk::Mission> _mission; 
+    std::vector<mavsdk::Mission> _mission; 
     std::unique_ptr<mavsdk::Param> _param; 
+
     // subscription 
     mavsdk::Telemetry::PositionHandle _h_pos; 
     mavsdk::Telemetry::AttitudeEulerHandle _h_att; 
