@@ -44,7 +44,7 @@ Point2D computeReleasePoint(
         uav_vx, uav_vy, uav_vz
     );
 
-    while (s(2) > 0) {
+    while (s(2) < 0) {
         // Update wind estimate based on equation 5 and Touma (reference Z2 and W2 to uav state)
         double height_ratio_pow = pow(abs(s(2) / uav_z), 1.0/7.0);
 
