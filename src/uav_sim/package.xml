@@ -9,24 +9,18 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>rclpy</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
   <depend>cv_bridge</depend>
+  <depend>rclcpp</depend>
 
   <depend>launch</depend>
   <depend>launch_ros</depend>
-  <depend>ament_index_python</depend>
   <exec_depend>ros_gz_bridge</exec_depend>
 
   <exec_depend>uav_mission</exec_depend>
   <exec_depend>uav_perception</exec_depend>
   <exec_depend>uav_vision</exec_depend>
-
-  <exec_depend>python3-numpy</exec_depend>
-  <exec_depend>python3-opencv</exec_depend>
-  <exec_depend>python3-pymavlink</exec_depend>
-  <exec_depend>python3-pymap3d</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
