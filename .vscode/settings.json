@@ -5,5 +5,10 @@
     "/home/fazabobi/ardu_ws/install/lib/python3.12/site-packages"
   ],
   "C_Cpp.intelliSenseEngine": "disabled",
-  "clangd.path": "clangd"
+  "clangd.path": "clangd",
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}",
+    "--background-index",
+    "--clang-tidy"
+  ]
 }

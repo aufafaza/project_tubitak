@@ -18,6 +18,12 @@
     "output": "CMakeFiles/detect_test.dir/src/test/detect_test.cpp.o"
   },
   {
+    "directory": "/home/fazabobi/project_tubitak/build/uav_control",
+    "command": "/usr/bin/c++ -DDEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp -DFASTCDR_DYN_LINK -Duav_control_EXPORTS -I/home/fazabobi/project_tubitak/src/uav_control/include -isystem /opt/ros/jazzy/include/rclcpp -isystem /usr/include/mavsdk -isystem /usr/include/eigen3 -isystem /opt/ros/jazzy/include/builtin_interfaces -isystem /opt/ros/jazzy/include/rosidl_runtime_c -isystem /opt/ros/jazzy/include/rcutils -isystem /opt/ros/jazzy/include/rosidl_typesupport_interface -isystem /opt/ros/jazzy/include/fastcdr -isystem /opt/ros/jazzy/include/rosidl_runtime_cpp -isystem /opt/ros/jazzy/include/rosidl_typesupport_fastrtps_cpp -isystem /opt/ros/jazzy/include/rmw -isystem /opt/ros/jazzy/include/rosidl_dynamic_typesupport -isystem /opt/ros/jazzy/include/rosidl_typesupport_fastrtps_c -isystem /opt/ros/jazzy/include/rosidl_typesupport_introspection_c -isystem /opt/ros/jazzy/include/rosidl_typesupport_introspection_cpp -isystem /opt/ros/jazzy/include/libstatistics_collector -isystem /opt/ros/jazzy/include/rcl -isystem /opt/ros/jazzy/include/rcl_interfaces -isystem /opt/ros/jazzy/include/service_msgs -isystem /opt/ros/jazzy/include/rcl_logging_interface -isystem /opt/ros/jazzy/include/rcl_yaml_param_parser -isystem /opt/ros/jazzy/include/type_description_interfaces -isystem /opt/ros/jazzy/include/rcpputils -isystem /opt/ros/jazzy/include/statistics_msgs -isystem /opt/ros/jazzy/include/rosgraph_msgs -isystem /opt/ros/jazzy/include/rosidl_typesupport_cpp -isystem /opt/ros/jazzy/include/rosidl_typesupport_c -isystem /opt/ros/jazzy/include/tracetools -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/uav_control.dir/src/uav_control.cpp.o -c /home/fazabobi/project_tubitak/src/uav_control/src/uav_control.cpp",
+    "file": "/home/fazabobi/project_tubitak/src/uav_control/src/uav_control.cpp",
+    "output": "CMakeFiles/uav_control.dir/src/uav_control.cpp.o"
+  },
+  {
     "directory": "/home/fazabobi/project_tubitak/build/uav_mission",
     "command": "/usr/bin/c++ -Dairdrop_planning_EXPORTS -I/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning -isystem /usr/include/eigen3 -isystem /usr/include/mavsdk -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/airdrop_planning.dir/src/airdrop_planning/airdrop_manager.cpp.o -c /home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/airdrop_manager.cpp",
     "file": "/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/airdrop_manager.cpp",
@@ -40,5 +46,11 @@
     "command": "/usr/bin/c++ -Dairdrop_planning_EXPORTS -I/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning -isystem /usr/include/eigen3 -isystem /usr/include/mavsdk -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/airdrop_planning.dir/src/airdrop_planning/dubins_planner.cpp.o -c /home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/dubins_planner.cpp",
     "file": "/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/dubins_planner.cpp",
     "output": "CMakeFiles/airdrop_planning.dir/src/airdrop_planning/dubins_planner.cpp.o"
+  },
+  {
+    "directory": "/home/fazabobi/project_tubitak/build/cam_calib",
+    "command": "/usr/bin/c++  -isystem /usr/include/opencv4  -o CMakeFiles/cam_calib.dir/cam_calib.cpp.o -c /home/fazabobi/project_tubitak/utils/cam_calib/cam_calib.cpp",
+    "file": "/home/fazabobi/project_tubitak/utils/cam_calib/cam_calib.cpp",
+    "output": "CMakeFiles/cam_calib.dir/cam_calib.cpp.o"
   }
 ]

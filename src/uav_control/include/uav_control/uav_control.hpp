@@ -14,6 +14,8 @@
 
 class Mav{ 
 public: 
+    Mav(std::string connectionstring); 
+    ~Mav() = default;
     enum class MissionState { 
         NONE = -1, 
         IDLE = 0, 
@@ -38,7 +40,7 @@ public:
 
     struct NedState{ 
         float north{0}, east{0}, down{0};  
-    }
+    };
 
 private: 
     void _startSubscription(); 
@@ -48,10 +50,9 @@ private:
     std::unique_ptr<mavsdk::Action> _action; 
     std::unique_ptr<mavsdk::Mission> _mission; 
     std::unique_ptr<mavsdk::Param> _param; 
-
     // subscription 
     mavsdk::Telemetry::PositionHandle _h_pos; 
-    mavsdk::Telemetry::EulerAngle _h_att; 
+    mavsdk::Telemetry::AttitudeEulerHandle _h_att; 
     mavsdk::Telemetry::PositionVelocityNedHandle _h_pos_vel; 
     mavsdk::Telemetry::GpsInfoHandle _h_pos_info; 
     mavsdk::Telemetry::HeadingHandle _h_hdg; 

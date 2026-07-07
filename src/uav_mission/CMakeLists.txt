@@ -11,9 +11,6 @@ find_package(ament_cmake_python REQUIRED)
 find_package(MAVSDK REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-ament_python_install_package(${PROJECT_NAME}
-  PACKAGE_DIR src/${PROJECT_NAME}
-)
 
 add_library(airdrop_planning SHARED
   src/airdrop_planning/airdrop_manager.cpp
