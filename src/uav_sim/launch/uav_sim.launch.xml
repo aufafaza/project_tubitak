@@ -32,6 +32,13 @@
           /world/runway/pose/info@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V">
   </node>
 
+  <include file="$(find-pkg-share mavros)/launch/apm.launch">
+    <arg name="fcu_url" value="udp://:14551@"/>
+    <arg name="gcs_url" value=""/>
+    <arg name="fcu_protocol" value="v2.0"/>
+    <arg name="respawn_mavros" value="false"/>
+  </include>
+
   <group if="$(var use_mavros_pl)">
     <node pkg="uav_sim" exec="payload_drop_bridge" name="payload_drop_bridge" output="screen">
       <param from="$(var uav_sim_share)/config/payload_drop.yaml"/>
@@ -48,9 +55,9 @@
 
   <group if="$(var use_camera)">
     <executable
-      cmd="kitty -- ros2 run uav_sim gz_camera.py"
+      cmd="kitty -- ros2 run uav_vision detect_test" 
       output="screen"
-      name="camera_detection"
+      name="detect_node"
     />
   </group>
 

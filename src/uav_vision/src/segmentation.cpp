@@ -12,7 +12,8 @@ std::optional<cv::Point2d> Detect::detect(cv::Mat& frame)
 {
     rect = false;
     cv::Mat mask;
-    cv::bitwise_or(redMask(frame), blueMask(frame), mask);
+    // cv::bitwise_or(redMask(frame), mask, mask);
+    mask = redMask(frame); 
     auto centroids = findShapes(mask, frame);
     if (centroids.empty()) return std::nullopt;
     return centroids.front();
