@@ -41,6 +41,10 @@ public:
     struct NedState{ 
         float north{0}, east{0}, down{0};  
     };
+    
+    struct HeadingState{ 
+        double heading_deg{0}; 
+    };
 
 private: 
     void _startSubscription(); 
@@ -48,7 +52,8 @@ private:
     std::shared_ptr<mavsdk::System> _system;    
     std::unique_ptr<mavsdk::Telemetry> _telemetry; 
     std::unique_ptr<mavsdk::Action> _action; 
-    std::vector<mavsdk::Mission> _mission; 
+    std::vector<mavsdk::Mission::MissionItem> _mission; 
+    // std::unique_ptr<mavsdk::Mission> _mission;
     std::unique_ptr<mavsdk::Param> _param; 
 
     // subscription 
@@ -64,6 +69,7 @@ private:
     std::optional<AttState> _att; 
     std::optional<VelState> _vel; 
     std::optional<NedState> _ned; 
+    std::optional<HeadingState> _hdg; 
     std::atomic<bool> _gps_ok{false}; 
     std::atomic<bool> _connected{false}; 
 };
