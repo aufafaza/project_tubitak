@@ -3,9 +3,7 @@
 #include <cmath>
 #include "point.hpp"
 
-#ifndef BALLISTIC_MODEL_H
-#define BALLISTIC_MODEL_H
-
+#pragma once 
 /* Algorithm 1 and simulating equation 3 in paper */
 
 /* x vector [x, y, z, vx, vy, vz] */
@@ -29,5 +27,3 @@ Point2D computeReleasePoint(
     double uav_z,
     double uav_vx, double uav_vy, double uav_vz,
     double wx, double wy, double wz);
-
-#endif

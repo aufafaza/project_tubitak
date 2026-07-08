@@ -1,6 +1,4 @@
-#ifndef DUBINS_PLANNER_HPP
-#define DUBINS_PLANNER_HPP
-
+#pragma once 
 #include "point.hpp"
 #define MIN_DEFINED_SPEED 0.1
 
@@ -23,5 +21,3 @@ DubinsPath generateApproachPath(
     double current_uav_x, double current_uav_y,
     bool &is_cw
 );
-
-#endif

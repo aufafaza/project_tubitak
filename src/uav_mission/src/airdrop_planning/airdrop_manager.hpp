@@ -1,5 +1,4 @@
-#ifndef AIRDROP_MANAGER_HPP
-#define AIRDROP_MANAGER_HPP
+#pragma once 
 
 #include "point.hpp"
 #include "dubins_planner.hpp"
@@ -49,5 +48,3 @@ public:
         double wx, double wy, double wz
     );
 };
-
-#endif // AIRDROP_MANAGER_HPP
