@@ -45,6 +45,14 @@ public:
     struct HeadingState{ 
         double heading_deg{0}; 
     };
+    
+    void createWaypoint(const mavsdk::Mission::MissionItem& item); 
+
+    void sendServoCommand(int servo_number, float pwm_value);
+
+    void getMissionState(MissionState& state);
+
+    void setMode(const mavsdk::Mission::ResultCallback& callback, const std::string& mode); 
 
 private: 
     void _startSubscription(); 
