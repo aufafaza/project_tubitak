@@ -2,6 +2,7 @@
 #include <mavsdk/mavsdk.h> 
 #include <mavsdk/plugins/action/action.h>
 #include <mavsdk/plugins/mission/mission.h>
+#include <mavsdk/plugins/mavlink_passthrough/mavlink_passthrough.h>
 #include <mavsdk/plugins/param/param.h>
 #include <mavsdk/plugins/telemetry/telemetry.h>
 
@@ -59,10 +60,10 @@ private:
     mavsdk::Mavsdk _mavsdk; 
     std::shared_ptr<mavsdk::System> _system;    
     std::unique_ptr<mavsdk::Telemetry> _telemetry; 
-    std::unique_ptr<mavsdk::Action> _action; 
-    std::vector<mavsdk::Mission::MissionItem> _mission; 
-    // std::unique_ptr<mavsdk::Mission> _mission;
-    std::unique_ptr<mavsdk::Param> _param; 
+    std::unique_ptr<mavsdk::Action> _action;
+    std::unique_ptr<mavsdk::MavlinkPassthrough> _passthrough;
+    std::vector<mavsdk::Mission::MissionItem> _mission;
+    std::unique_ptr<mavsdk::Param> _param;
 
     // subscription 
     mavsdk::Telemetry::PositionHandle _h_pos; 
