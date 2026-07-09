@@ -26,10 +26,9 @@ Mav::Mav(std::string connectionstring)
 }
 
 void Mav::_startSubscription(){
-    const mavsdk::Telemetry::Result set_rate_result = _telemetry->set_rate_position(1.0);
-    if (set_rate_result != mavsdk::Telemetry::Result::Success){
-        throw std::runtime_error("Setting rate failed");
-    }
+    _telemetry->set_rate_position(10.0);
+    _telemetry->set_rate_attitude_euler(20.0);
+    _telemetry->set_rate_position_velocity_ned(10.0);
 
     _h_pos = _telemetry->subscribe_position([this](mavsdk::Telemetry::Position pos){
         std::lock_guard<std::mutex> lock(_mtx);
@@ -41,14 +40,20 @@ void Mav::_startSubscription(){
 
     _h_att = _telemetry->subscribe_attitude_euler([this](mavsdk::Telemetry::EulerAngle ea){
         constexpr float deg2rad = M_PI / 180.0f;
+        AttState s{ea.roll_deg * deg2rad, ea.pitch_deg * deg2rad, ea.yaw_deg * deg2rad};
         std::lock_guard<std::mutex> lock(_mtx);
-        _att = AttState{ea.roll_deg * deg2rad, ea.pitch_deg * deg2rad, ea.yaw_deg * deg2rad};
+        _att = s;
+        _att_buf.push_back({std::chrono::steady_clock::now(), s});
+        if (_att_buf.size() > TELEM_BUF) _att_buf.pop_front();
     });
 
     _h_pos_vel = _telemetry->subscribe_position_velocity_ned([this](mavsdk::Telemetry::PositionVelocityNed posvel){
+        NedState ned{posvel.position.north_m, posvel.position.east_m, posvel.position.down_m};
         std::lock_guard<std::mutex> lock(_mtx);
         _vel = VelState{posvel.velocity.north_m_s, posvel.velocity.east_m_s, posvel.velocity.down_m_s};
-        _ned = NedState{posvel.position.north_m, posvel.position.east_m, posvel.position.down_m};
+        _ned = ned;
+        _ned_buf.push_back({std::chrono::steady_clock::now(), ned});
+        if (_ned_buf.size() > TELEM_BUF) _ned_buf.pop_front();
     });
 
     _h_pos_info = _telemetry->subscribe_gps_info([this](mavsdk::Telemetry::GpsInfo gps_info){
@@ -61,6 +66,86 @@ void Mav::_startSubscription(){
         _hdg = HeadingState{hdg.heading_deg};
         if (_gps) _gps->hdg_deg = hdg.heading_deg;
     });
+}
+
+static float lerpAngle(float a, float b, float alpha) {
+    float diff = b - a;
+    if (diff >  M_PI) diff -= 2.0f * M_PI;
+    if (diff < -M_PI) diff += 2.0f * M_PI;
+    return a + diff * alpha;
+}
+
+std::optional<Mav::AttState> Mav::getAttAt(TimePoint t) const {
+    std::lock_guard<std::mutex> lock(_mtx);
+    if (_att_buf.size() < 2) return _att;
+
+    // Past all data, return oldest
+    if (t <= _att_buf.front().t) return _att_buf.front().v;
+    // Beyond latest, return newest
+    if (t >= _att_buf.back().t)  return _att_buf.back().v;
+
+    // Find bracketing pair
+    for (size_t i = 0; i + 1 < _att_buf.size(); ++i) {
+        if (_att_buf[i].t <= t && t <= _att_buf[i + 1].t) {
+            float span  = std::chrono::duration<float>(_att_buf[i+1].t - _att_buf[i].t).count();
+            float alpha = std::chrono::duration<float>(t - _att_buf[i].t).count() / span;
+            const auto& a = _att_buf[i].v;
+            const auto& b = _att_buf[i + 1].v;
+            return AttState{
+                lerpAngle(a.roll_rad,  b.roll_rad,  alpha),
+                lerpAngle(a.pitch_rad, b.pitch_rad, alpha),
+                lerpAngle(a.yaw_rad,   b.yaw_rad,   alpha)
+            };
+        }
+    }
+    return _att;
+}
+
+std::optional<Mav::NedState> Mav::getNedAt(TimePoint t) const {
+    std::lock_guard<std::mutex> lock(_mtx);
+    if (_ned_buf.size() < 2) return _ned;
+
+    if (t <= _ned_buf.front().t) return _ned_buf.front().v;
+    if (t >= _ned_buf.back().t)  return _ned_buf.back().v;
+
+    for (size_t i = 0; i + 1 < _ned_buf.size(); ++i) {
+        if (_ned_buf[i].t <= t && t <= _ned_buf[i + 1].t) {
+            float span  = std::chrono::duration<float>(_ned_buf[i+1].t - _ned_buf[i].t).count();
+            float alpha = std::chrono::duration<float>(t - _ned_buf[i].t).count() / span;
+            const auto& a = _ned_buf[i].v;
+            const auto& b = _ned_buf[i + 1].v;
+            return NedState{
+                a.north + (b.north - a.north) * alpha,
+                a.east  + (b.east  - a.east)  * alpha,
+                a.down  + (b.down  - a.down)  * alpha
+            };
+        }
+    }
+    return _ned;
+}
+
+std::optional<Mav::GpsState> Mav::getGPS() const {
+    std::lock_guard<std::mutex> lock(_mtx);
+    return _gps;
+}
+
+std::optional<Mav::AttState> Mav::getAtt() const {
+    std::lock_guard<std::mutex> lock(_mtx);
+    return _att;
+}
+
+std::optional<Mav::NedState> Mav::getPositionNed() const {
+    std::lock_guard<std::mutex> lock(_mtx);
+    return _ned;
+}
+
+std::optional<Mav::VelState> Mav::getVelocityNed() const {
+    std::lock_guard<std::mutex> lock(_mtx);
+    return _vel;
+}
+
+bool Mav::gpsSafeCheck() const {
+    return _gps_ok.load();
 }
 
 void Mav::createWaypoint(const mavsdk::Mission::MissionItem& item) {

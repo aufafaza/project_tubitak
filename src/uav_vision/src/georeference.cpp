@@ -29,14 +29,12 @@ void Georeference::rBodyNED(double yaw, double pitch, double roll)
 
 cv::Matx33d Georeference::cameraToBody()
 {
-    // Camera frame: x=right, y=down, z=into scene (optical axis)
-    // Body frame (NED): x=forward/N, y=right/E, z=down
-    // cam-x (right)  → body-y (East)
-    // cam-y (down)   → body-x (North)
-    // cam-z (optical)→ body-z (down)
-    return cv::Matx33d(0, 1, 0,
-                       1, 0, 0,
-                       0, 0, 1);
+    // SDF pose: pitch=+π/2 → optical axis (+X_link) → body -Z (down) ✓
+    // Image right (+u) → link -Y → body -Y (Gazebo right) → NED +Y (East)
+    // Image down  (+v) → link -Z → body -X (Gazebo backward) → NED -X (South)
+    return cv::Matx33d(0,  1, 0,
+                      -1,  0, 0,
+                       0,  0, 1);
 }
 
 std::vector<double> Georeference::pixelToGPS(double u_pixel, double v_pixel, double altitude){ 

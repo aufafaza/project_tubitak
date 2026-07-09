@@ -31,6 +31,7 @@ ament_target_dependencies(detect_test rclcpp sensor_msgs geometry_msgs std_msgs 
 target_link_libraries(detect_test uav_vision)
 
 install(TARGETS uav_vision
+  EXPORT uav_vision_export
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -43,5 +44,8 @@ install(TARGETS detect_test
 install(DIRECTORY include/
   DESTINATION include
 )
+
+ament_export_targets(uav_vision_export HAS_LIBRARY_TARGET)
+ament_export_dependencies(OpenCV Eigen3)
 
 ament_package()

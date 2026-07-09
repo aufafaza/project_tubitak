@@ -6,16 +6,23 @@
 #include <mavsdk/plugins/param/param.h>
 #include <mavsdk/plugins/telemetry/telemetry.h>
 
-#include <atomic> 
-#include <memory> 
-#include <mutex> 
-#include <optional> 
-#include <string> 
-#include <vector> 
+#include <atomic>
+#include <chrono>
+#include <deque>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <string>
+#include <vector>
 
-class Mav{ 
-public: 
-    Mav(std::string connectionstring); 
+class Mav{
+public:
+    using TimePoint = std::chrono::steady_clock::time_point;
+
+    template<typename T>
+    struct Stamped { TimePoint t; T v; };
+
+    Mav(std::string connectionstring);
     ~Mav() = default;
     enum class MissionState { 
         NONE = -1, 
@@ -53,7 +60,18 @@ public:
 
     void getMissionState(MissionState& state);
 
-    void setMode(const mavsdk::Mission::ResultCallback& callback, const std::string& mode); 
+    void setMode(const mavsdk::Mission::ResultCallback& callback, const std::string& mode);
+
+    // Latest cached telemetry (non-blocking)
+    std::optional<GpsState> getGPS() const;
+    std::optional<AttState> getAtt() const;
+    std::optional<NedState> getPositionNed() const;
+    std::optional<VelState> getVelocityNed() const;
+    bool gpsSafeCheck() const;
+
+    // Interpolated pose at a specific capture timestamp — use for georeferencing
+    std::optional<AttState> getAttAt(TimePoint t) const;
+    std::optional<NedState> getNedAt(TimePoint t) const;
 
 private: 
     void _startSubscription(); 
@@ -72,13 +90,18 @@ private:
     mavsdk::Telemetry::GpsInfoHandle _h_pos_info; 
     mavsdk::Telemetry::HeadingHandle _h_hdg; 
 
-    // telemetry state 
-    mutable std::mutex _mtx; 
-    std::optional<GpsState> _gps; 
-    std::optional<AttState> _att; 
-    std::optional<VelState> _vel; 
-    std::optional<NedState> _ned; 
-    std::optional<HeadingState> _hdg; 
-    std::atomic<bool> _gps_ok{false}; 
-    std::atomic<bool> _connected{false}; 
+    // telemetry state (latest values)
+    mutable std::mutex _mtx;
+    std::optional<GpsState>     _gps;
+    std::optional<AttState>     _att;
+    std::optional<VelState>     _vel;
+    std::optional<NedState>     _ned;
+    std::optional<HeadingState> _hdg;
+    std::atomic<bool> _gps_ok{false};
+    std::atomic<bool> _connected{false};
+
+    // timestamped history for interpolation (~3s at 20 Hz)
+    static constexpr size_t TELEM_BUF = 64;
+    std::deque<Stamped<AttState>> _att_buf;
+    std::deque<Stamped<NedState>> _ned_buf;
 };

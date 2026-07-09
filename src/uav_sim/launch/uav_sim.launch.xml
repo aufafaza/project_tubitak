@@ -19,7 +19,7 @@
   />
 
   <executable
-    cmd="kitty -- sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551"
+    cmd="kitty -- sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551 --out udp:127.0.0.1:14552"
     output="screen"
     name="ardupilot_sitl"
   />

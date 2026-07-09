@@ -15,7 +15,7 @@ typedef struct PhysicsParams {
     double g = 9.81;
 } PhysicsParams;
 
-static PhysicsParams PHYS_PARAMS = {1, 1.25, 4, 5, 9.81}; // Update according to actual vals
+inline PhysicsParams PHYS_PARAMS = {1, 1.25, 4, 5, 9.81}; // Update according to actual vals
 
 /* Returns x dot vector [dx, dy, dz, dvx, dvy, dvz] using equation 3 */
 StateVector getSDot(StateVector& s, PhysicsParams &p, double wx, double wy, double wz);

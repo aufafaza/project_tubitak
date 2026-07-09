@@ -30,7 +30,7 @@ StateVector getSDot(StateVector& s, PhysicsParams &p, double wx, double wy, doub
 /* Returns suggested release point based on ballistic model */
 /* Using NED target coords, current UAV state, and current windspeed */
 Point2D computeReleasePoint(
-    double dt, double tgt_ned_x, double tgt_ned_y, double tgt_ned_z,
+    double dt, double tgt_ned_x, double tgt_ned_y, [[maybe_unused]] double tgt_ned_z,
     double uav_z,
     double uav_vx, double uav_vy, double uav_vz,
     double wx, double wy, double wz) {

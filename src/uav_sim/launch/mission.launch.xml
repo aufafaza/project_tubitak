@@ -3,6 +3,7 @@
   <arg name="use_console" default="false" description="Launch MAVProxy console" />
   <arg name="use_drop_zones" default="true" description="Spawn drop zones" />
   <arg name="use_camera" default="false" description="Launch OpenCV detection node alongside mission node" />
+  <arg name="use_orchestrator" default="false" description="Launch C++ mission_test orchestrator (detection + georef via MAVSDK)" />
 
   <let name="uav_sim_share" value="$(find-pkg-share uav_sim)"/>
 
@@ -15,9 +16,17 @@
   </include>
 
   <executable
-    cmd="bash -c 'sleep 10 &amp;&amp; ros2 run uav_sim gz_mission.py'"
+    cmd="bash -c 'sleep 10 &amp;&amp; ros2 run uav_sim gz_mission'"
     output="screen"
     name="mission_node"
   />
+
+  <group if="$(var use_orchestrator)">
+    <executable
+      cmd="kitty -- ros2 run uav_control mission_test"
+      output="screen"
+      name="mission_test"
+    />
+  </group>
 
 </launch>

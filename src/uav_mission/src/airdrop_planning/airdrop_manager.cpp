@@ -46,7 +46,7 @@ void AirdropManager::update(
                 is_cw
             );
             
-            double commanded_radius = is_cw ? LOITER_RADIUS : -LOITER_RADIUS;
+            [[maybe_unused]] double commanded_radius = is_cw ? LOITER_RADIUS : -LOITER_RADIUS;
             
             // TODO: MAVLink command - Loiter Unlimited at current_path.loiter_center with commanded_radius
             

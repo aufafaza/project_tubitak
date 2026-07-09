@@ -8,7 +8,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(MAVSDK REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(uav_vision REQUIRED)
 
 add_library(uav_control SHARED src/uav_control.cpp)
 
@@ -38,5 +42,13 @@ install(
 
 ament_export_targets(uav_control_export HAS_LIBRARY_TARGET)
 ament_export_dependencies(MAVSDK Eigen3 rclcpp)
+
+add_executable(mission_test src/mission_test.cpp)
+target_link_libraries(mission_test uav_control ${OpenCV_LIBS})
+ament_target_dependencies(mission_test rclcpp sensor_msgs cv_bridge uav_vision)
+
+install(TARGETS mission_test
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
 
 ament_package()
