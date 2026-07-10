@@ -9,7 +9,7 @@ class Georeference {
         ~Georeference() = default;
         void rBodyNED(double yaw, double pitch, double roll);
         cv::Matx33d cameraToBody();
-        std::vector<double> pixelToGPS(double u_pixel, double v_pixel, double altitude);     
+        std::vector<double> pixelToGPS(double u_pixel, double v_pixel, double altitude, double* gus_out = nullptr);
         static constexpr double kEarthRadius = 6378137.0; 
 
         // this should be called for each telemetry update 

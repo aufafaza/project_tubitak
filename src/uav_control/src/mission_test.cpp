@@ -37,7 +37,6 @@ private:
     }
 
     void onImage(const sensor_msgs::msg::Image::SharedPtr msg) {
-        // Timestamp at frame arrival — used to fetch interpolated pose
         auto t = std::chrono::steady_clock::now();
 
         if (!_georef) return;
@@ -69,18 +68,27 @@ private:
                 att->roll_rad * 180.0 / M_PI,
                 alt_agl);
             try {
-                auto tgt = _georef->pixelToGPS(centroid->x, centroid->y, alt_agl);
-                RCLCPP_INFO(get_logger(),
-                    "Target: (%.7f, %.7f)  drone: (%.7f, %.7f)  Δlat=%.2fm  Δlon=%.2fm",
-                    tgt[0], tgt[1], gps->lat, gps->lon,
-                    (tgt[0] - gps->lat) * 111320.0,
-                    (tgt[1] - gps->lon) * 111320.0 * std::cos(gps->lat * M_PI / 180.0));
+                double gus = 0.0;
+                auto tgt = _georef->pixelToGPS(centroid->x, centroid->y, alt_agl, &gus);
+                double obliquity = (alt_agl > 0.1) ? (gus / alt_agl) : 99.0;
+                if (obliquity > 1.5) {
+                    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 500,
+                        "Georef dropped: obliquity=%.2f (%.1f° off-nadir)", obliquity,
+                        std::acos(1.0 / std::sqrt(obliquity)) * 180.0 / M_PI);
+                } else {
+                    RCLCPP_INFO(get_logger(),
+                        "Target: (%.7f, %.7f)  drone: (%.7f, %.7f)  Δlat=%.2fm  Δlon=%.2fm  obliquity=%.2f",
+                        tgt[0], tgt[1], gps->lat, gps->lon,
+                        (tgt[0] - gps->lat) * 111320.0,
+                        (tgt[1] - gps->lon) * 111320.0 * std::cos(gps->lat * M_PI / 180.0),
+                        obliquity);
 
-                cv::putText(frame,
-                    "lat:" + std::to_string(tgt[0]).substr(0, 10)
-                    + " lon:" + std::to_string(tgt[1]).substr(0, 10),
-                    cv::Point(10, 60), cv::FONT_HERSHEY_SIMPLEX, 0.6,
-                    cv::Scalar(0, 255, 255), 2);
+                    cv::putText(frame,
+                        "lat:" + std::to_string(tgt[0]).substr(0, 10)
+                        + " lon:" + std::to_string(tgt[1]).substr(0, 10),
+                        cv::Point(10, 60), cv::FONT_HERSHEY_SIMPLEX, 0.6,
+                        cv::Scalar(0, 255, 255), 2);
+                }
             } catch (const std::exception& e) {
                 RCLCPP_WARN(get_logger(), "Georef: %s", e.what());
             }

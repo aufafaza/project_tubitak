@@ -13,13 +13,13 @@
            value="$(env GZ_SIM_SYSTEM_PLUGIN_PATH '')"/>
 
   <executable
-    cmd="gz sim -v4 -r $(var uav_sim_share)/world/vtail_runway.sdf"
+    cmd="gz sim -v4 -r $(var uav_sim_share)/world/alti_transition_runway.sdf"
     output="screen"
     name="gazebo"
   />
 
   <executable
-    cmd="kitty -- sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/tubi.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551 --out udp:127.0.0.1:14552"
+    cmd="kitty -- sim_vehicle.py -N -v ArduPlane -f JSON --model JSON --add-param-file $(var uav_sim_share)/param/alti_transition_quad.param $(var map_flag) $(var console_flag) --out udp:127.0.0.1:14550 --out udp:127.0.0.1:14551 --out udp:127.0.0.1:14552"
     output="screen"
     name="ardupilot_sitl"
   />
@@ -53,12 +53,5 @@
     />
   </group>
 
-  <group if="$(var use_camera)">
-    <executable
-      cmd="kitty -- ros2 run uav_vision detect_test" 
-      output="screen"
-      name="detect_node"
-    />
-  </group>
 
 </launch>

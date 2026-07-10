@@ -29,32 +29,41 @@ void Georeference::rBodyNED(double yaw, double pitch, double roll)
 
 cv::Matx33d Georeference::cameraToBody()
 {
-    // SDF pose: pitch=+π/2 → optical axis (+X_link) → body -Z (down) ✓
-    // Image right (+u) → link -Y → body -Y (Gazebo right) → NED +Y (East)
-    // Image down  (+v) → link -Z → body -X (Gazebo backward) → NED -X (South)
-    return cv::Matx33d(0,  1, 0,
-                      -1,  0, 0,
+    // SDF pose: pitch=+π/2 → optical axis (+X_link) → body +Z (down in NED) ✓
+    // Image right (+u) → body +Y (East): col 0 = (0, +1, 0)
+    // Image down  (+v) → body -X (South): col 1 = (-1, 0, 0)
+    // Depth       (+z) → body +Z (Down):  col 2 = (0, 0, 1)
+    return cv::Matx33d(0, -1, 0,
+                       1,  0, 0,
                        0,  0, 1);
 }
 
-std::vector<double> Georeference::pixelToGPS(double u_pixel, double v_pixel, double altitude){ 
-//    auto deprojectedMatrix;
-
-    cv::Matx31d pixelMatrix = cv::Matx31d(u_pixel, v_pixel, 1.0); 
-   cv::Matx31d deprojectedMatrix = this->A_.inv() * pixelMatrix;
-    cv::Matx31d rayNED; 
-    rayNED = this->bodyNED * this->cameraToBody() * deprojectedMatrix;
+std::vector<double> Georeference::pixelToGPS(double u_pixel, double v_pixel, double altitude, double* gus_out)
+{
+    cv::Matx31d pixelMatrix = cv::Matx31d(u_pixel, v_pixel, 1.0);
+    cv::Matx31d deprojectedMatrix = this->A_.inv() * pixelMatrix;
+    cv::Matx31d rayNED = this->bodyNED * this->cameraToBody() * deprojectedMatrix;
 
     if (std::abs(rayNED(2,0)) < 1e-6)
-        throw std::runtime_error("Ray is horizontal — no ground intersection.");
+        throw std::runtime_error("Ray is horizontal, no ground intersection.");
 
-    double lambda = altitude / rayNED(2,0);
+    cv::Matx31d cam_offset_body(0.1, 0.0, 0.05);
+    cv::Matx31d cam_offset_world = this->bodyNED * cam_offset_body;
+
+    double camera_alt = altitude - cam_offset_world(2, 0);
+
+    double lambda = camera_alt / rayNED(2, 0);
     if (lambda < 0.0)
         throw std::runtime_error("Ray points away from ground.");
 
-    std::vector<double> groundPointNED;
-    groundPointNED.push_back(rayNED(0,0) * lambda);
-    groundPointNED.push_back(rayNED(1,0) * lambda);
-    std::vector<double> GPS = NEDtoGPS(groundPointNED[0], groundPointNED[1], altitude, this->lat0, this->lon0);
-    return GPS;
+    if (gus_out) {
+        double ray_norm = std::sqrt(rayNED(0,0)*rayNED(0,0) + rayNED(1,0)*rayNED(1,0) + rayNED(2,0)*rayNED(2,0));
+        double cos_tilt = rayNED(2, 0) / ray_norm;
+        *gus_out = camera_alt / (cos_tilt * cos_tilt);
+    }
+
+    double north = cam_offset_world(0, 0) + rayNED(0, 0) * lambda;
+    double east  = cam_offset_world(1, 0) + rayNED(1, 0) * lambda;
+
+    return NEDtoGPS(north, east, altitude, this->lat0, this->lon0);
 }

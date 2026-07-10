@@ -16,8 +16,8 @@ rand() {
 
 # for testing.....
 
-X_RED=0.00;   Y_RED=170.0
-X_BLUE=-14.02;   Y_BLUE=120.38
+X_RED=-14.02;   Y_RED=120.38
+X_BLUE=0.00;   Y_BLUE=170.0
 
 echo "Spawn red drop zone at ($X_RED, $Y_RED)"
 echo "Spawn blue drop zone at ($X_BLUE, $Y_BLUE)"
