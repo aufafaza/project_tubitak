@@ -32,8 +32,13 @@ private:
         if (_georef) return;
         _georef = std::make_unique<Georeference>(
             msg->k[0], msg->k[4], msg->k[2], msg->k[5]);
-        RCLCPP_INFO(get_logger(), "Camera: fx=%.1f fy=%.1f cx=%.1f cy=%.1f",
-                    msg->k[0], msg->k[4], msg->k[2], msg->k[5]);
+        _K = cv::Matx33d(msg->k[0], 0, msg->k[2],
+                         0, msg->k[4], msg->k[5],
+                         0, 0, 1);
+        _D = cv::Mat(msg->d).clone();
+        RCLCPP_INFO(get_logger(), "Camera: fx=%.1f fy=%.1f cx=%.1f cy=%.1f  D[0]=%.4f",
+                    msg->k[0], msg->k[4], msg->k[2], msg->k[5],
+                    msg->d.empty() ? 0.0 : msg->d[0]);
     }
 
     void onImage(const sensor_msgs::msg::Image::SharedPtr msg) {
@@ -68,24 +73,38 @@ private:
                 att->roll_rad * 180.0 / M_PI,
                 alt_agl);
             try {
+                // Undistort centroid before deprojection
+                std::vector<cv::Point2f> raw = {cv::Point2f(centroid->x, centroid->y)};
+                std::vector<cv::Point2f> undist;
+                cv::undistortPoints(raw, undist, _K, _D, cv::noArray(), _K);
+
                 double gus = 0.0;
-                auto tgt = _georef->pixelToGPS(centroid->x, centroid->y, alt_agl, &gus);
+                auto tgt = _georef->pixelToGPS(undist[0].x, undist[0].y, alt_agl, &gus);
                 double obliquity = (alt_agl > 0.1) ? (gus / alt_agl) : 99.0;
                 if (obliquity > 1.5) {
                     RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 500,
                         "Georef dropped: obliquity=%.2f (%.1f° off-nadir)", obliquity,
                         std::acos(1.0 / std::sqrt(obliquity)) * 180.0 / M_PI);
                 } else {
+                    // EMA update (α=0.2) — only when within 5m lat of overhead
+                    constexpr double alpha = 0.2;
+                    double dlat_m = std::abs((tgt[0] - gps->lat) * 111320.0);
+                    if (!_ema.valid) { _ema.lat = tgt[0]; _ema.lon = tgt[1]; _ema.valid = true; }
+                    else if (dlat_m < 5.0) {
+                        _ema.lat = alpha*tgt[0] + (1-alpha)*_ema.lat;
+                        _ema.lon = alpha*tgt[1] + (1-alpha)*_ema.lon;
+                    }
+
                     RCLCPP_INFO(get_logger(),
-                        "Target: (%.7f, %.7f)  drone: (%.7f, %.7f)  Δlat=%.2fm  Δlon=%.2fm  obliquity=%.2f",
-                        tgt[0], tgt[1], gps->lat, gps->lon,
+                        "raw: (%.7f, %.7f)  ema: (%.7f, %.7f)  Δlat=%.2fm  Δlon=%.2fm  obliquity=%.2f",
+                        tgt[0], tgt[1], _ema.lat, _ema.lon,
                         (tgt[0] - gps->lat) * 111320.0,
                         (tgt[1] - gps->lon) * 111320.0 * std::cos(gps->lat * M_PI / 180.0),
                         obliquity);
 
                     cv::putText(frame,
-                        "lat:" + std::to_string(tgt[0]).substr(0, 10)
-                        + " lon:" + std::to_string(tgt[1]).substr(0, 10),
+                        "lat:" + std::to_string(_ema.lat).substr(0, 10)
+                        + " lon:" + std::to_string(_ema.lon).substr(0, 10),
                         cv::Point(10, 60), cv::FONT_HERSHEY_SIMPLEX, 0.6,
                         cv::Scalar(0, 255, 255), 2);
                 }
@@ -105,6 +124,11 @@ private:
     Mav& _mav;
     Detect _detect;
     std::unique_ptr<Georeference> _georef;
+    cv::Matx33d _K;
+    cv::Mat _D;
+
+    // EMA of accepted georef measurements (α=0.2 ≈ 5-sample memory)
+    struct { double lat{0}, lon{0}; bool valid{false}; } _ema;
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr _img_sub;
     rclcpp::Subscription<sensor_msgs::msg::CameraInfo>::SharedPtr _info_sub;
