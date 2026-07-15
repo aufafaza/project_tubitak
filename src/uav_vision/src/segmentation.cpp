@@ -1,4 +1,5 @@
 #include "uav_vision/segmentation.hpp"
+#include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
@@ -12,7 +13,7 @@ std::optional<cv::Point2d> Detect::detect(cv::Mat& frame)
 {
     rect = false;
     cv::Mat mask;
-    // cv::bitwise_or(redMask(frame), mask, mask);
+    // cv::bitwise_or(redMask(frame), blueMask(frame), mask);
     mask = redMask(frame); 
     auto centroids = findShapes(mask, frame);
     if (centroids.empty()) return std::nullopt;
@@ -55,15 +56,22 @@ std::vector<cv::Point2d> Detect::findShapes(const cv::Mat& mask, cv::Mat& frame)
 
     for (const auto &contour : contours) {
         double area = cv::contourArea(contour);
-        if (area < 50.0) continue;
+        if (area < 600.0) continue;
 
         std::vector<cv::Point> hull;
         cv::convexHull(contour, hull);
         double hull_area = cv::contourArea(hull);
-        if (hull_area == 0.0) continue;
+        if (hull_area < 1.0) continue;
+        if (area / hull_area < 0.85) continue;
 
-        double solidity = area / hull_area;
-        if (solidity < 0.85) continue;
+        std::vector<cv::Point> approx;
+        cv::approxPolyDP(contour, approx, 0.04 * cv::arcLength(contour, true), true);
+        if (approx.size() != 4) continue;
+        if (!cv::isContourConvex(approx)) continue;
+
+        cv::RotatedRect rr = cv::minAreaRect(approx);
+        float ar = (rr.size.height > 0) ? rr.size.width / rr.size.height : 0;
+        if (ar < 0.5f || ar > 2.0f) continue;
 
         if (area > max_area) {
             cv::Moments m = cv::moments(contour);
@@ -71,7 +79,7 @@ std::vector<cv::Point2d> Detect::findShapes(const cv::Mat& mask, cv::Mat& frame)
                 max_area = area;
                 best = cv::Point2d(m.m10 / m.m00, m.m01 / m.m00);
                 found = true;
-                cv::drawContours(frame, std::vector<std::vector<cv::Point>>{contour}, -1, cv::Scalar(0, 255, 0), 1);
+                cv::drawContours(frame, std::vector<std::vector<cv::Point>>{approx}, -1, cv::Scalar(0, 255, 0), 2);
             }
         }
     }
@@ -80,3 +88,36 @@ std::vector<cv::Point2d> Detect::findShapes(const cv::Mat& mask, cv::Mat& frame)
     cv::circle(frame, best, 5, cv::Scalar{0, 255, 0}, -1);
     return {best};
 }
+
+// int main()
+// {
+//     cv::VideoCapture cap("/home/fazabobi/project_tubitak/src/uav_vision/src/test_clip_5_trim.mp4");
+//
+//     if (!cap.isOpened()) {
+//         std::cerr << "Failed to open video file" << std::endl;
+//         return 1;
+//     }
+//
+//     Detect detector(cap);
+//     cv::Mat frame;
+//
+//     while (true) {
+//         cap >> frame;
+//         if (frame.empty()) break; 
+//         // auto blue_mask = detector.blueMask(frame); 
+//         auto centroid = detector.detect(frame);
+//         if (centroid.has_value()) {
+//             std::cout << "Detected at: " << centroid->x << ", " << centroid->y << std::endl;
+//         }
+//
+//         cv::imshow("Detection", frame);
+//
+//         // cv::imshow("blue mask", blue_mask);
+//         int key = cv::waitKey(30) & 0xFF;
+//         if (key == 27) break; 
+//     }
+//
+//     cap.release();
+//     cv::destroyAllWindows();
+//     return 0;
+// }

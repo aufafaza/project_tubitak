@@ -232,3 +232,4 @@ install
 log/
 logs/
 *.tlog
+*.mp4

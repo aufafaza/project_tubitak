@@ -27,8 +27,12 @@ target_include_directories(uav_vision PUBLIC
 target_link_libraries(uav_vision ${OpenCV_LIBS} Eigen3::Eigen)
 
 add_executable(detect_test src/test/detect_test.cpp)
+# add_executable(segmentation src/segmentation.cpp)
 ament_target_dependencies(detect_test rclcpp sensor_msgs geometry_msgs std_msgs cv_bridge)
+# ament_target_dependencies(segmentation rclcpp sensor_msgs geometry_msgs std_msgs cv_bridge)
 target_link_libraries(detect_test uav_vision)
+# target_link_libraries(segmentation uav_vision)
+#
 
 install(TARGETS uav_vision
   EXPORT uav_vision_export
@@ -40,6 +44,10 @@ install(TARGETS uav_vision
 install(TARGETS detect_test
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
+
+# install (TARGETS segmentation
+#   RUNTIME DESTINATION lib/${PROJECT_NAME} 
+# )
 
 install(DIRECTORY include/
   DESTINATION include

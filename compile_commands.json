@@ -24,6 +24,12 @@
     "output": "CMakeFiles/uav_control.dir/src/uav_control.cpp.o"
   },
   {
+    "directory": "/home/fazabobi/project_tubitak/build/uav_control",
+    "command": "/usr/bin/c++ -DDEFAULT_RMW_IMPLEMENTATION=rmw_fastrtps_cpp -DFASTCDR_DYN_LINK -I/home/fazabobi/project_tubitak/src/uav_control/include -isystem /home/fazabobi/project_tubitak/install/uav_vision/include -isystem /opt/ros/jazzy/include/rclcpp -isystem /opt/ros/jazzy/include/sensor_msgs -isystem /opt/ros/jazzy/include/cv_bridge -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -isystem /usr/include/mavsdk -isystem /opt/ros/jazzy/include/builtin_interfaces -isystem /opt/ros/jazzy/include/rosidl_runtime_c -isystem /opt/ros/jazzy/include/rcutils -isystem /opt/ros/jazzy/include/rosidl_typesupport_interface -isystem /opt/ros/jazzy/include/fastcdr -isystem /opt/ros/jazzy/include/rosidl_runtime_cpp -isystem /opt/ros/jazzy/include/rosidl_typesupport_fastrtps_cpp -isystem /opt/ros/jazzy/include/rmw -isystem /opt/ros/jazzy/include/rosidl_dynamic_typesupport -isystem /opt/ros/jazzy/include/rosidl_typesupport_fastrtps_c -isystem /opt/ros/jazzy/include/rosidl_typesupport_introspection_c -isystem /opt/ros/jazzy/include/rosidl_typesupport_introspection_cpp -isystem /opt/ros/jazzy/include/libstatistics_collector -isystem /opt/ros/jazzy/include/rcl -isystem /opt/ros/jazzy/include/rcl_interfaces -isystem /opt/ros/jazzy/include/service_msgs -isystem /opt/ros/jazzy/include/rcl_logging_interface -isystem /opt/ros/jazzy/include/rcl_yaml_param_parser -isystem /opt/ros/jazzy/include/type_description_interfaces -isystem /opt/ros/jazzy/include/rcpputils -isystem /opt/ros/jazzy/include/statistics_msgs -isystem /opt/ros/jazzy/include/rosgraph_msgs -isystem /opt/ros/jazzy/include/rosidl_typesupport_cpp -isystem /opt/ros/jazzy/include/rosidl_typesupport_c -isystem /opt/ros/jazzy/include/tracetools -isystem /opt/ros/jazzy/include/geometry_msgs -isystem /opt/ros/jazzy/include/std_msgs -Wall -Wextra -Wpedantic -o CMakeFiles/mission_test.dir/src/mission_test.cpp.o -c /home/fazabobi/project_tubitak/src/uav_control/src/mission_test.cpp",
+    "file": "/home/fazabobi/project_tubitak/src/uav_control/src/mission_test.cpp",
+    "output": "CMakeFiles/mission_test.dir/src/mission_test.cpp.o"
+  },
+  {
     "directory": "/home/fazabobi/project_tubitak/build/uav_mission",
     "command": "/usr/bin/c++ -Dairdrop_planning_EXPORTS -I/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning -isystem /usr/include/eigen3 -isystem /usr/include/mavsdk -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/airdrop_planning.dir/src/airdrop_planning/airdrop_manager.cpp.o -c /home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/airdrop_manager.cpp",
     "file": "/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/airdrop_manager.cpp",
@@ -46,6 +52,12 @@
     "command": "/usr/bin/c++ -Dairdrop_planning_EXPORTS -I/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning -isystem /usr/include/eigen3 -isystem /usr/include/mavsdk -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/airdrop_planning.dir/src/airdrop_planning/dubins_planner.cpp.o -c /home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/dubins_planner.cpp",
     "file": "/home/fazabobi/project_tubitak/src/uav_mission/src/airdrop_planning/dubins_planner.cpp",
     "output": "CMakeFiles/airdrop_planning.dir/src/airdrop_planning/dubins_planner.cpp.o"
+  },
+  {
+    "directory": "/home/fazabobi/project_tubitak/build/uav_payload_dropper_simple",
+    "command": "/usr/bin/c++ -I/home/fazabobi/project_tubitak/src/uav_payload_dropper_simple/include -isystem /usr/include/mavsdk -Wall -Wextra -Wpedantic -o CMakeFiles/payload_dropper.dir/src/payload_dropper.cpp.o -c /home/fazabobi/project_tubitak/src/uav_payload_dropper_simple/src/payload_dropper.cpp",
+    "file": "/home/fazabobi/project_tubitak/src/uav_payload_dropper_simple/src/payload_dropper.cpp",
+    "output": "CMakeFiles/payload_dropper.dir/src/payload_dropper.cpp.o"
   },
   {
     "directory": "/home/fazabobi/project_tubitak/build/cam_calib",
