@@ -12,6 +12,7 @@ find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(mavros_msgs REQUIRED)
 find_package(uav_vision REQUIRED)
 
 add_library(uav_control SHARED src/uav_control.cpp)
@@ -45,7 +46,7 @@ ament_export_dependencies(MAVSDK Eigen3 rclcpp)
 
 add_executable(mission_test src/mission_test.cpp)
 target_link_libraries(mission_test uav_control ${OpenCV_LIBS})
-ament_target_dependencies(mission_test rclcpp sensor_msgs cv_bridge uav_vision)
+ament_target_dependencies(mission_test rclcpp sensor_msgs cv_bridge uav_vision mavros_msgs)
 
 install(TARGETS mission_test
   RUNTIME DESTINATION lib/${PROJECT_NAME}

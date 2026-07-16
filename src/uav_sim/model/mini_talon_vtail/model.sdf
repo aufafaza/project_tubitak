@@ -724,10 +724,11 @@
     <link name="camera_link">
       <pose>0.1 0 -0.05 0 1.5707 0</pose>
       <inertial>
-        <mass>0.01</mass> <inertia>
-          <ixx>0.00001</ixx>
-          <iyy>0.00001</iyy>
-          <izz>0.00001</izz>
+        <mass>1e-9</mass>
+        <inertia>
+          <ixx>1e-15</ixx>
+          <iyy>1e-15</iyy>
+          <izz>1e-15</izz>
         </inertia>
       </inertial>
       <sensor name="down_camera" type="camera">

@@ -127,5 +127,17 @@
       <uri>model://payload_blue</uri>
     </include>
 
+    <include>
+      <name>dropzone_red</name>
+      <pose>0 120.38 0 0 0 0</pose>
+      <uri>model://dropzone_red</uri>
+    </include>
+
+    <include>
+      <name>dropzone_blue</name>
+      <pose>0 170.0 0 0 0 0</pose>
+      <uri>model://dropzone_blue</uri>
+    </include>
+
   </world>
 </sdf>

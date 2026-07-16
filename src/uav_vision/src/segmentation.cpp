@@ -30,19 +30,56 @@ cv::Mat Detect::redMask(const cv::Mat& bgr)
     cv::bitwise_or(mask1, mask2, mask);
     cv::morphologyEx(mask, mask, cv::MORPH_OPEN,  kernel);
     cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, kernel);
-    return mask;
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    if (contours.empty())
+        return mask;
+ 
+    std::vector<cv::Point> allPoints;
+    for (const auto& c : contours) {
+        if (cv::contourArea(c) < 50.0) continue;
+        allPoints.insert(allPoints.end(), c.begin(), c.end());
+    }
+    if (allPoints.empty())
+        return mask;
+
+    std::vector<cv::Point> hull;
+    cv::convexHull(allPoints, hull);
+
+    cv::Mat filled = cv::Mat::zeros(mask.size(), CV_8U);
+    cv::drawContours(filled, std::vector<std::vector<cv::Point>>{hull}, -1, cv::Scalar(255), cv::FILLED);
+    return filled;
 }
 
 cv::Mat Detect::blueMask(const cv::Mat& bgr)
 {
     cv::Mat hsv, blur, mask;
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3, 3));
-    cv::GaussianBlur(bgr, blur, cv::Size(7, 7), 0);
-    cv::cvtColor(blur, hsv, cv::COLOR_BGR2HSV);
+    // cv::GaussianBlur(bgr, blur, cv::Size(7, 7), 0);
+    cv::cvtColor(bgr, hsv, cv::COLOR_BGR2HSV);
     cv::inRange(hsv, cv::Scalar(100, 120, 50), cv::Scalar(130, 255, 255), mask);
     cv::morphologyEx(mask, mask, cv::MORPH_OPEN,  kernel);
+    // cv::morphologyEx(mask, mask, cv::MORPH_TOPHAT,  kernel);
     cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, kernel);
-    return mask;
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    if (contours.empty())
+        return mask;
+ 
+    std::vector<cv::Point> allPoints;
+    for (const auto& c : contours) {
+        if (cv::contourArea(c) < 50.0) continue;
+        allPoints.insert(allPoints.end(), c.begin(), c.end());
+    }
+    if (allPoints.empty())
+        return mask;
+
+    std::vector<cv::Point> hull;
+    cv::convexHull(allPoints, hull);
+
+    cv::Mat filled = cv::Mat::zeros(mask.size(), CV_8U);
+    cv::drawContours(filled, std::vector<std::vector<cv::Point>>{hull}, -1, cv::Scalar(255), cv::FILLED);
+    return filled;
 }
 
 std::vector<cv::Point2d> Detect::findShapes(const cv::Mat& mask, cv::Mat& frame)
@@ -65,7 +102,7 @@ std::vector<cv::Point2d> Detect::findShapes(const cv::Mat& mask, cv::Mat& frame)
         if (area / hull_area < 0.85) continue;
 
         std::vector<cv::Point> approx;
-        cv::approxPolyDP(contour, approx, 0.04 * cv::arcLength(contour, true), true);
+        cv::approxPolyDP(contour, approx, 0.105 * cv::arcLength(contour, true), true);
         if (approx.size() != 4) continue;
         if (!cv::isContourConvex(approx)) continue;
 
@@ -91,7 +128,7 @@ std::vector<cv::Point2d> Detect::findShapes(const cv::Mat& mask, cv::Mat& frame)
 
 // int main()
 // {
-//     cv::VideoCapture cap("/home/fazabobi/project_tubitak/src/uav_vision/src/test_clip_5_trim.mp4");
+//     cv::VideoCapture cap("/home/fazabobi/project_tubitak/src/uav_vision/src/test_clip_7.mp4");
 //
 //     if (!cap.isOpened()) {
 //         std::cerr << "Failed to open video file" << std::endl;
@@ -104,15 +141,23 @@ std::vector<cv::Point2d> Detect::findShapes(const cv::Mat& mask, cv::Mat& frame)
 //     while (true) {
 //         cap >> frame;
 //         if (frame.empty()) break; 
-//         // auto blue_mask = detector.blueMask(frame); 
+//         auto blue_mask = detector.blueMask(frame); 
+//         auto red_mask = detector.redMask(frame);  
 //         auto centroid = detector.detect(frame);
+//
 //         if (centroid.has_value()) {
 //             std::cout << "Detected at: " << centroid->x << ", " << centroid->y << std::endl;
 //         }
 //
 //         cv::imshow("Detection", frame);
-//
-//         // cv::imshow("blue mask", blue_mask);
+//         cv::imshow("Blue Mask", blue_mask);
+//         cv::imshow("Red Mask", red_mask);
+//         // cv::namedWindow("Detection", cv::WINDOW_NORMAL);
+//         // cv::namedWindow("Blue Mask", cv::WINDOW_NORMAL);
+//         // cv::namedWindow("Red Mask", cv::WINDOW_NORMAL);
+//         // cv::moveWindow("Detection", 0, 0);
+//         // cv::moveWindow("Blue Mask", frame.cols, 0);
+//         // cv::moveWindow("Red Mask", 0, frame.rows + 50);
 //         int key = cv::waitKey(30) & 0xFF;
 //         if (key == 27) break; 
 //     }

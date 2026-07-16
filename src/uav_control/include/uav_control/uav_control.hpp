@@ -17,7 +17,7 @@
 
 class Mav{
 public:
-    using TimePoint = std::chrono::steady_clock::time_point;
+    using TimePoint = int64_t; // nanoseconds, steady_clock
 
     template<typename T>
     struct Stamped { TimePoint t; T v; };
@@ -54,7 +54,12 @@ public:
         double heading_deg{0}; 
     };
     
-    void createWaypoint(const mavsdk::Mission::MissionItem& item); 
+    void createWaypoint(const mavsdk::Mission::MissionItem& item);
+    void updateLastWaypoint(const mavsdk::Mission::MissionItem& item);
+
+    // Download current ArduPilot mission, append item, re-upload (serialized by internal mutex)
+    void appendLiveWaypoint(const mavsdk::Mission::MissionItem& item,
+                            std::function<void(bool)> callback = nullptr);
 
     void sendServoCommand(int servo_number, float pwm_value);
 
@@ -92,6 +97,7 @@ private:
 
     // telemetry state (latest values)
     mutable std::mutex _mtx;
+    std::mutex _mission_mtx;  // serializes mission download/upload operations
     std::optional<GpsState>     _gps;
     std::optional<AttState>     _att;
     std::optional<VelState>     _vel;

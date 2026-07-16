@@ -43,7 +43,7 @@ void Mav::_startSubscription(){
         AttState s{ea.roll_deg * deg2rad, ea.pitch_deg * deg2rad, ea.yaw_deg * deg2rad};
         std::lock_guard<std::mutex> lock(_mtx);
         _att = s;
-        _att_buf.push_back({std::chrono::steady_clock::now(), s});
+        _att_buf.push_back({std::chrono::steady_clock::now().time_since_epoch().count(), s});
         if (_att_buf.size() > TELEM_BUF) _att_buf.pop_front();
     });
 
@@ -52,7 +52,7 @@ void Mav::_startSubscription(){
         std::lock_guard<std::mutex> lock(_mtx);
         _vel = VelState{posvel.velocity.north_m_s, posvel.velocity.east_m_s, posvel.velocity.down_m_s};
         _ned = ned;
-        _ned_buf.push_back({std::chrono::steady_clock::now(), ned});
+        _ned_buf.push_back({std::chrono::steady_clock::now().time_since_epoch().count(), ned});
         if (_ned_buf.size() > TELEM_BUF) _ned_buf.pop_front();
     });
 
@@ -87,8 +87,8 @@ std::optional<Mav::AttState> Mav::getAttAt(TimePoint t) const {
     // Find bracketing pair
     for (size_t i = 0; i + 1 < _att_buf.size(); ++i) {
         if (_att_buf[i].t <= t && t <= _att_buf[i + 1].t) {
-            float span  = std::chrono::duration<float>(_att_buf[i+1].t - _att_buf[i].t).count();
-            float alpha = std::chrono::duration<float>(t - _att_buf[i].t).count() / span;
+            float span  = (_att_buf[i+1].t - _att_buf[i].t) * 1e-9f;
+            float alpha = (t - _att_buf[i].t) * 1e-9f / span;
             const auto& a = _att_buf[i].v;
             const auto& b = _att_buf[i + 1].v;
             return AttState{
@@ -110,8 +110,8 @@ std::optional<Mav::NedState> Mav::getNedAt(TimePoint t) const {
 
     for (size_t i = 0; i + 1 < _ned_buf.size(); ++i) {
         if (_ned_buf[i].t <= t && t <= _ned_buf[i + 1].t) {
-            float span  = std::chrono::duration<float>(_ned_buf[i+1].t - _ned_buf[i].t).count();
-            float alpha = std::chrono::duration<float>(t - _ned_buf[i].t).count() / span;
+            float span  = (_ned_buf[i+1].t - _ned_buf[i].t) * 1e-9f;
+            float alpha = (t - _ned_buf[i].t) * 1e-9f / span;
             const auto& a = _ned_buf[i].v;
             const auto& b = _ned_buf[i + 1].v;
             return NedState{
@@ -150,6 +150,25 @@ bool Mav::gpsSafeCheck() const {
 
 void Mav::createWaypoint(const mavsdk::Mission::MissionItem& item) {
     _mission.push_back(item);
+}
+
+void Mav::updateLastWaypoint(const mavsdk::Mission::MissionItem& item) {
+    if (!_mission.empty()) _mission.back() = item;
+}
+
+void Mav::appendLiveWaypoint(const mavsdk::Mission::MissionItem& item,
+                             std::function<void(bool)> callback) {
+    std::lock_guard<std::mutex> lock(_mission_mtx);
+    auto mp = std::make_shared<mavsdk::Mission>(_system);
+    auto [result, plan] = mp->download_mission();
+    if (result != mavsdk::Mission::Result::Success) {
+        if (callback) callback(false);
+        return;
+    }
+    plan.mission_items.push_back(item);
+    // upload_mission is synchronous so we hold the mutex through the whole operation
+    auto upload_result = mp->upload_mission(plan);
+    if (callback) callback(upload_result == mavsdk::Mission::Result::Success);
 }
 
 void Mav::sendServoCommand(int servo_number, float pwm_value) {
