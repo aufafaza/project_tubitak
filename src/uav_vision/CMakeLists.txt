@@ -15,7 +15,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-add_library(uav_vision SHARED src/segmentation.cpp src/georeference.cpp)
+add_library(uav_vision SHARED src/shape_detection.cpp src/georeference.cpp)
 
 target_include_directories(uav_vision PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -27,11 +27,11 @@ target_include_directories(uav_vision PUBLIC
 target_link_libraries(uav_vision ${OpenCV_LIBS} Eigen3::Eigen)
 
 add_executable(detect_test src/test/detect_test.cpp)
-# add_executable(segmentation src/segmentation.cpp)
+# add_executable(shape_detection src/shape_detection.cpp)
 ament_target_dependencies(detect_test rclcpp sensor_msgs geometry_msgs std_msgs cv_bridge)
-# ament_target_dependencies(segmentation rclcpp sensor_msgs geometry_msgs std_msgs cv_bridge)
+# ament_target_dependencies(shape_detection rclcpp sensor_msgs geometry_msgs std_msgs cv_bridge)
 target_link_libraries(detect_test uav_vision)
-# target_link_libraries(segmentation uav_vision)
+# target_link_libraries(shape_detection uav_vision)
 #
 
 install(TARGETS uav_vision
@@ -45,7 +45,7 @@ install(TARGETS detect_test
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
-# install (TARGETS segmentation
+# install (TARGETS shape_detection
 #   RUNTIME DESTINATION lib/${PROJECT_NAME} 
 # )
 

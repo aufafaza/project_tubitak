@@ -1,9 +1,9 @@
 [
   {
     "directory": "/home/fazabobi/project_tubitak/build/uav_vision",
-    "command": "/usr/bin/c++ -Duav_vision_EXPORTS -I/home/fazabobi/project_tubitak/src/uav_vision/include -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/uav_vision.dir/src/segmentation.cpp.o -c /home/fazabobi/project_tubitak/src/uav_vision/src/segmentation.cpp",
-    "file": "/home/fazabobi/project_tubitak/src/uav_vision/src/segmentation.cpp",
-    "output": "CMakeFiles/uav_vision.dir/src/segmentation.cpp.o"
+    "command": "/usr/bin/c++ -Duav_vision_EXPORTS -I/home/fazabobi/project_tubitak/src/uav_vision/include -isystem /usr/include/opencv4 -isystem /usr/include/eigen3 -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/uav_vision.dir/src/shape_detection.cpp.o -c /home/fazabobi/project_tubitak/src/uav_vision/src/shape_detection.cpp",
+    "file": "/home/fazabobi/project_tubitak/src/uav_vision/src/shape_detection.cpp",
+    "output": "CMakeFiles/uav_vision.dir/src/shape_detection.cpp.o"
   },
   {
     "directory": "/home/fazabobi/project_tubitak/build/uav_vision",

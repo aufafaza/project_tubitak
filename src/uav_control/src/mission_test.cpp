@@ -1,5 +1,5 @@
 #include "uav_control/uav_control.hpp"
-#include "uav_vision/segmentation.hpp"
+#include "uav_vision/shape_detection.hpp"
 #include "uav_vision/georeference.hpp"
 
 #include <rclcpp/rclcpp.hpp>
